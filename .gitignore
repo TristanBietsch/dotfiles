@@ -54,3 +54,25 @@ target/
 # Git-related tools
 gh/
 git/
+
+# SSH/GPG private keys (critical if you're symlinking .ssh)
+*.pem
+id_*
+!id_*.pub
+
+# Secrets that might sneak in
+.env.local
+*.secret
+*_secret*
+
+# System files
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msixbundle
+*.lnk
+Thumbs.db
+
