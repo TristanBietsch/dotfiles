@@ -1,0 +1,56 @@
+# macOS noise
+.DS_Store
+**/.DS_Store
+.AppleDouble
+.LSOverride
+
+# macOS folder attributes
+Icon?
+._*
+
+# Thumbnails
+._.Thumbs.db
+Thumbs.db
+
+# Stow safety
+stow-local-ignore
+stow-global-ignore
+
+# Logs / temp
+*.log
+*.tmp
+*~
+
+# Swap files (Neovim/Vim)
+*.swp
+*.swo
+*.swm
+
+# Backup files
+*.bak
+*.orig
+
+# Node projects inside dotfiles (if present)
+node_modules/
+
+# Python environments (if present)
+__pycache__/
+*.pyc
+.env
+.venv
+
+# Cargo (if present)
+target/
+
+# VSCode/JetBrains configs (if accidentally created)
+.vscode/
+.idea/
+
+# Obsidian local junk
+.obsidian/workspace
+.obsidian/workspace.json
+.obsidian/cache/
+
+# Git-related tools
+gh/
+git/

@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+exec w3m -dump -cols 120 "$@"

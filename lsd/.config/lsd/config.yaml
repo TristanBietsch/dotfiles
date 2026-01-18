@@ -1,0 +1,9 @@
+icons:
+  when: auto      
+  theme: fancy   
+color:
+  when: auto
+indicators: true
+sorting:
+  dir-grouping: first
+date: relative

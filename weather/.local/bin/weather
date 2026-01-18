@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+LOC="${1:-SFO}"
+exec curl "wttr.in/${LOC}?m"

@@ -1,0 +1,21 @@
+# Rendering
+display_image=0
+inline_image=0
+use_mouse=0
+
+# Output determinism
+dump_width=120
+tabstop=2
+
+# Network
+no_proxy=*
+accept_language=en
+
+# UX (agent-friendly)
+confirm_qq=0
+show_lnum=1
+wrap_search=1
+
+# Disable noise
+use_cookie=0
+use_history=0
