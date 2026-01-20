@@ -37,3 +37,29 @@ export PATH="$PATH:/Users/tristan/.lmstudio/bin"
 
 alias ll="ollama run llama3.2:8b"
 alias ll="ollama run llama3.2:8b"
+alias utmctl="/Applications/UTM.app/Contents/MacOS/utmctl"
+alias utmctl="/Applications/UTM.app/Contents/MacOS/utmctl"
+
+vm() {
+    case "$1" in
+        start) utmctl start FreeBSD ;;
+        stop)  utmctl stop FreeBSD ;;
+        ssh)   ssh tristan@localhost -p 2222 ;;
+        *)     echo "Usage: vm {start|stop|ssh}" ;;
+    esac
+}
+vm() {
+    case "$1" in
+        start)
+            open -gja UTM
+            sleep 1
+            utmctl start FreeBSD
+            echo "Waiting for SSH..."
+            while ! nc -z localhost 2222 2>/dev/null; do sleep 1; done
+            echo "Ready."
+            ;;
+        stop)  utmctl stop FreeBSD ;;
+        ssh)   shift; ssh tristan@localhost -p 2222 "$@" ;;
+        *)     echo "Usage: vm {start|stop|ssh}" ;;
+    esac
+}
