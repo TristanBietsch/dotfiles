@@ -63,3 +63,5 @@ vm() {
         *)     echo "Usage: vm {start|stop|ssh}" ;;
     esac
 }
+alias pn=pnpm
+export PATH="$HOME/.cargo/bin:$PATH"
