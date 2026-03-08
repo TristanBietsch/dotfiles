@@ -113,5 +113,14 @@ _zb_path_append "$ZEROBREW_BIN"
 _zb_path_append "$ZEROBREW_PREFIX/bin"
 
 # <<< zerobrew <<<
-alias brew="zb"
-alias brew="zb"
+# zerobrew wrapper - routes supported commands to zb
+brew() {
+  case "$1" in
+    install|uninstall|list|info|gc)
+      zb "$@"
+      ;;
+    *)
+      command brew "$@"
+      ;;
+  esac
+}
