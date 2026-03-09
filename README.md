@@ -1,44 +1,45 @@
 # dotfiles
 
-unix-style dotfiles managed with a custom stow-link installer.
+## philosophy
+
+These files define an operating environment, not a theme. The machine is treated as infrastructure. Input is keyboard-first. Tools are small, composable, and quiet. Configuration is explicit. Behavior should stay predictable under repetition. Visual noise is kept low so state, text, and process remain visible.
+
+## stack
+
+- TODO: shell
+- TODO: editor
+- TODO: terminal
+- TODO: package manager
+- TODO: window manager
+
+## repo_layout
+
+```text
+.
+├── zsh/
+├── nvim/
+├── ghostty/
+├── git/
+├── tmux/
+├── aerospace/
+├── stow/
+├── install.sh
+└── Makefile
+```
 
 ## install
 
 ```sh
-git clone https://github.com/TristanBietsch/dotfiles.git ~/dotfiles
-cd ~/dotfiles
+git clone <repo>
+cd dotfiles
 make install
 ```
 
-## what's inside
+## principles
 
-| package    | what                              |
-|------------|-----------------------------------|
-| aerospace  | tiling window manager config      |
-| btop       | system monitor                    |
-| claude     | claude code settings + hooks      |
-| codex      | openai codex config               |
-| ghostty    | terminal emulator                 |
-| git        | gitconfig                         |
-| karabiner  | keyboard remapping                |
-| lsd        | ls replacement config             |
-| ncspot     | spotify TUI                       |
-| nvim       | neovim (lazy.nvim, LSP, etc.)     |
-| obsidian   | vault settings + plugin prefs     |
-| ranger     | file manager                      |
-| tmux       | terminal multiplexer              |
-| w3m        | terminal web browser              |
-| weather    | weather script                    |
-| zerobrew   | homebrew alternative (submodule)  |
-| zsh        | shell config                      |
-
-## commands
-
-```sh
-make install    # link configs + install packages
-make link       # symlink only
-make brew       # homebrew packages only
-make uninstall  # remove links, restore backups
-make dry-run    # preview changes
-make update     # pull + reinstall
-```
+- small tools
+- text first
+- composability
+- reproducibility
+- minimal surface area
+- explicit configuration
