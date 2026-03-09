@@ -1,0 +1,105 @@
+{
+  "version": 2,
+  "plugins": {
+    "code-review@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/code-review/205b6e0b3036",
+        "version": "205b6e0b3036",
+        "installedAt": "2026-02-24T04:26:02.561Z",
+        "lastUpdated": "2026-03-04T21:01:50.320Z",
+        "gitCommitSha": "aa296ec81e8ccb49c9784f167c2c0aa625a86cec"
+      }
+    ],
+    "frontend-design@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/frontend-design/205b6e0b3036",
+        "version": "205b6e0b3036",
+        "installedAt": "2026-02-24T04:26:28.684Z",
+        "lastUpdated": "2026-03-04T21:01:50.320Z",
+        "gitCommitSha": "aa296ec81e8ccb49c9784f167c2c0aa625a86cec"
+      }
+    ],
+    "context7@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/context7/205b6e0b3036",
+        "version": "205b6e0b3036",
+        "installedAt": "2026-02-24T04:26:43.021Z",
+        "lastUpdated": "2026-03-04T21:01:50.318Z",
+        "gitCommitSha": "aa296ec81e8ccb49c9784f167c2c0aa625a86cec"
+      }
+    ],
+    "github@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/github/205b6e0b3036",
+        "version": "205b6e0b3036",
+        "installedAt": "2026-02-24T04:26:48.781Z",
+        "lastUpdated": "2026-03-04T21:01:50.318Z",
+        "gitCommitSha": "aa296ec81e8ccb49c9784f167c2c0aa625a86cec"
+      }
+    ],
+    "superpowers@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1",
+        "version": "4.3.1",
+        "installedAt": "2026-02-24T04:27:00.949Z",
+        "lastUpdated": "2026-02-24T04:27:00.949Z",
+        "gitCommitSha": "e4a2375cb705ca5800f0833528ce36a3faf9017a"
+      }
+    ],
+    "commit-commands@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/commit-commands/205b6e0b3036",
+        "version": "205b6e0b3036",
+        "installedAt": "2026-02-24T04:27:15.726Z",
+        "lastUpdated": "2026-03-04T21:01:50.321Z",
+        "gitCommitSha": "aa296ec81e8ccb49c9784f167c2c0aa625a86cec"
+      }
+    ],
+    "code-simplifier@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/code-simplifier/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-02-24T04:27:23.838Z",
+        "lastUpdated": "2026-02-24T04:27:23.838Z",
+        "gitCommitSha": "aa296ec81e8ccb49c9784f167c2c0aa625a86cec"
+      }
+    ],
+    "feature-dev@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/feature-dev/205b6e0b3036",
+        "version": "205b6e0b3036",
+        "installedAt": "2026-02-24T04:27:31.690Z",
+        "lastUpdated": "2026-03-04T21:01:50.322Z",
+        "gitCommitSha": "aa296ec81e8ccb49c9784f167c2c0aa625a86cec"
+      }
+    ],
+    "security-guidance@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/security-guidance/205b6e0b3036",
+        "version": "205b6e0b3036",
+        "installedAt": "2026-02-24T04:28:07.926Z",
+        "lastUpdated": "2026-03-04T21:01:50.320Z",
+        "gitCommitSha": "aa296ec81e8ccb49c9784f167c2c0aa625a86cec"
+      }
+    ],
+    "ralph-loop@claude-plugins-official": [
+      {
+        "scope": "user",
+        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/ralph-loop/205b6e0b3036",
+        "version": "205b6e0b3036",
+        "installedAt": "2026-02-24T04:28:30.445Z",
+        "lastUpdated": "2026-03-04T21:01:50.322Z",
+        "gitCommitSha": "aa296ec81e8ccb49c9784f167c2c0aa625a86cec"
+      }
+    ]
+  }
+}

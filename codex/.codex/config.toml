@@ -1,0 +1,12 @@
+model = "gpt-5.3-codex"
+[projects."/Users/tristan"]
+trust_level = "untrusted"
+
+[projects."/Users/tristan/Documents/test"]
+trust_level = "trusted"
+
+[notice]
+"hide_gpt-5.1-codex-max_migration_prompt" = true
+
+[notice.model_migrations]
+"gpt-5.1-codex-max" = "gpt-5.3-codex"
