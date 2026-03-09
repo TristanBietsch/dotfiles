@@ -1,11 +1,11 @@
 model = "gpt-5.4"
-[projects."/Users/tristan"]
+[projects."~"]
 trust_level = "untrusted"
 
-[projects."/Users/tristan/Documents/test"]
+[projects."~/Documents/test"]
 trust_level = "trusted"
 
-[projects."/Users/tristan/dotfiles"]
+[projects."~/dotfiles"]
 trust_level = "trusted"
 
 [notice]

@@ -4,7 +4,7 @@
     "code-review@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/code-review/205b6e0b3036",
+        "installPath": "~/.claude/plugins/cache/claude-plugins-official/code-review/205b6e0b3036",
         "version": "205b6e0b3036",
         "installedAt": "2026-02-24T04:26:02.561Z",
         "lastUpdated": "2026-03-04T21:01:50.320Z",
@@ -14,7 +14,7 @@
     "frontend-design@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/frontend-design/205b6e0b3036",
+        "installPath": "~/.claude/plugins/cache/claude-plugins-official/frontend-design/205b6e0b3036",
         "version": "205b6e0b3036",
         "installedAt": "2026-02-24T04:26:28.684Z",
         "lastUpdated": "2026-03-04T21:01:50.320Z",
@@ -24,7 +24,7 @@
     "context7@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/context7/205b6e0b3036",
+        "installPath": "~/.claude/plugins/cache/claude-plugins-official/context7/205b6e0b3036",
         "version": "205b6e0b3036",
         "installedAt": "2026-02-24T04:26:43.021Z",
         "lastUpdated": "2026-03-04T21:01:50.318Z",
@@ -34,7 +34,7 @@
     "github@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/github/205b6e0b3036",
+        "installPath": "~/.claude/plugins/cache/claude-plugins-official/github/205b6e0b3036",
         "version": "205b6e0b3036",
         "installedAt": "2026-02-24T04:26:48.781Z",
         "lastUpdated": "2026-03-04T21:01:50.318Z",
@@ -44,7 +44,7 @@
     "superpowers@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1",
+        "installPath": "~/.claude/plugins/cache/claude-plugins-official/superpowers/4.3.1",
         "version": "4.3.1",
         "installedAt": "2026-02-24T04:27:00.949Z",
         "lastUpdated": "2026-02-24T04:27:00.949Z",
@@ -54,7 +54,7 @@
     "commit-commands@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/commit-commands/205b6e0b3036",
+        "installPath": "~/.claude/plugins/cache/claude-plugins-official/commit-commands/205b6e0b3036",
         "version": "205b6e0b3036",
         "installedAt": "2026-02-24T04:27:15.726Z",
         "lastUpdated": "2026-03-04T21:01:50.321Z",
@@ -64,7 +64,7 @@
     "code-simplifier@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/code-simplifier/1.0.0",
+        "installPath": "~/.claude/plugins/cache/claude-plugins-official/code-simplifier/1.0.0",
         "version": "1.0.0",
         "installedAt": "2026-02-24T04:27:23.838Z",
         "lastUpdated": "2026-02-24T04:27:23.838Z",
@@ -74,7 +74,7 @@
     "feature-dev@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/feature-dev/205b6e0b3036",
+        "installPath": "~/.claude/plugins/cache/claude-plugins-official/feature-dev/205b6e0b3036",
         "version": "205b6e0b3036",
         "installedAt": "2026-02-24T04:27:31.690Z",
         "lastUpdated": "2026-03-04T21:01:50.322Z",
@@ -84,7 +84,7 @@
     "security-guidance@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/security-guidance/205b6e0b3036",
+        "installPath": "~/.claude/plugins/cache/claude-plugins-official/security-guidance/205b6e0b3036",
         "version": "205b6e0b3036",
         "installedAt": "2026-02-24T04:28:07.926Z",
         "lastUpdated": "2026-03-04T21:01:50.320Z",
@@ -94,7 +94,7 @@
     "ralph-loop@claude-plugins-official": [
       {
         "scope": "user",
-        "installPath": "/Users/tristan/.claude/plugins/cache/claude-plugins-official/ralph-loop/205b6e0b3036",
+        "installPath": "~/.claude/plugins/cache/claude-plugins-official/ralph-loop/205b6e0b3036",
         "version": "205b6e0b3036",
         "installedAt": "2026-02-24T04:28:30.445Z",
         "lastUpdated": "2026-03-04T21:01:50.322Z",

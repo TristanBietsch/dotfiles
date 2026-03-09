@@ -1,53 +1,26 @@
-# mark load
+PROMPT='%n@%m %~ $ '
 
-alias ls='lsd'
+# PATH
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
+export PATH="$PATH:$HOME/go/bin"
+export PATH="$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.opencode/bin:$PATH"
+export PATH="$PATH:$HOME/.lmstudio/bin"
+export PATH="/Library/TeX/texbin:$PATH"
+
+# aliases
+alias ls='lsd --tree --depth 1'
 alias ll='lsd -la'
 alias la='lsd -a'
 alias lt='lsd --tree'
+alias c='clear'
+alias browse='w3md'
+alias files='ranger'
+alias pn='pnpm'
+alias utmctl='/Applications/UTM.app/Contents/MacOS/utmctl'
 
-export PATH="$HOME/.local/bin:$PATH"
-PROMPT="$ "
-PROMPT='%n@%m $ '
-PROMPT='%n@%m %~ $ '
-
-# Generated for envman. Do not edit.
-[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
-export PATH=$PATH:$HOME/go/bin
-alias ls='lsd --tree --depth 1'
-alias c="clear" 
-
-# Load secrets (API keys, etc.)
-[ -f ~/.secrets ] && source ~/.secrets
-export PATH="/Library/TeX/texbin:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
-
-# user bin
-export PATH="$HOME/bin:$PATH"
-
-# w3m
-alias browse="w3md"
-
-# opencode
-export PATH=/Users/tristan/.opencode/bin:$PATH
-alias files="ranger"
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/tristan/.lmstudio/bin"
-# End of LM Studio CLI section
-
-alias ll="ollama run llama3.2:8b"
-alias ll="ollama run llama3.2:8b"
-alias utmctl="/Applications/UTM.app/Contents/MacOS/utmctl"
-alias utmctl="/Applications/UTM.app/Contents/MacOS/utmctl"
-
-vm() {
-    case "$1" in
-        start) utmctl start FreeBSD ;;
-        stop)  utmctl stop FreeBSD ;;
-        ssh)   ssh tristan@localhost -p 2222 ;;
-        *)     echo "Usage: vm {start|stop|ssh}" ;;
-    esac
-}
+# functions
 vm() {
     case "$1" in
         start)
@@ -55,72 +28,89 @@ vm() {
             sleep 1
             utmctl start FreeBSD
             echo "Waiting for SSH..."
-            while ! nc -z localhost 2222 2>/dev/null; do sleep 1; done
+            while ! nc -z localhost 2222 2>/dev/null; do
+                sleep 1
+            done
             echo "Ready."
             ;;
-        stop)  utmctl stop FreeBSD ;;
-        ssh)   shift; ssh tristan@localhost -p 2222 "$@" ;;
-        *)     echo "Usage: vm {start|stop|ssh}" ;;
+        stop)
+            utmctl stop FreeBSD
+            ;;
+        ssh)
+            shift
+            ssh tristan@localhost -p 2222 "$@"
+            ;;
+        *)
+            echo "Usage: vm {start|stop|ssh}"
+            ;;
     esac
 }
-alias pn=pnpm
-export PATH="$HOME/.cargo/bin:$PATH"
-# >>> zerobrew >>>
+
+# tool integrations
+# envman
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+
 # zerobrew
-export ZEROBREW_DIR=/Users/tristan/.zerobrew
-export ZEROBREW_BIN=/Users/tristan/.zerobrew/bin
+export ZEROBREW_DIR="$HOME/.zerobrew"
+export ZEROBREW_BIN="$HOME/.zerobrew/bin"
 export ZEROBREW_ROOT=/opt/zerobrew
 export ZEROBREW_PREFIX=/opt/zerobrew
 export PKG_CONFIG_PATH="$ZEROBREW_PREFIX/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 
-# SSL/TLS certificates (only if ca-certificates is installed)
 if [ -z "${CURL_CA_BUNDLE:-}" ] || [ -z "${SSL_CERT_FILE:-}" ]; then
-  if [ -f "$ZEROBREW_PREFIX/opt/ca-certificates/share/ca-certificates/cacert.pem" ]; then
-    [ -z "${CURL_CA_BUNDLE:-}" ] && export CURL_CA_BUNDLE="$ZEROBREW_PREFIX/opt/ca-certificates/share/ca-certificates/cacert.pem"
-    [ -z "${SSL_CERT_FILE:-}" ] && export SSL_CERT_FILE="$ZEROBREW_PREFIX/opt/ca-certificates/share/ca-certificates/cacert.pem"
-  elif [ -f "$ZEROBREW_PREFIX/etc/ca-certificates/cacert.pem" ]; then
-    [ -z "${CURL_CA_BUNDLE:-}" ] && export CURL_CA_BUNDLE="$ZEROBREW_PREFIX/etc/ca-certificates/cacert.pem"
-    [ -z "${SSL_CERT_FILE:-}" ] && export SSL_CERT_FILE="$ZEROBREW_PREFIX/etc/ca-certificates/cacert.pem"
-  elif [ -f "$ZEROBREW_PREFIX/etc/openssl/cert.pem" ]; then
-    [ -z "${CURL_CA_BUNDLE:-}" ] && export CURL_CA_BUNDLE="$ZEROBREW_PREFIX/etc/openssl/cert.pem"
-    [ -z "${SSL_CERT_FILE:-}" ] && export SSL_CERT_FILE="$ZEROBREW_PREFIX/etc/openssl/cert.pem"
-  elif [ -f "$ZEROBREW_PREFIX/share/ca-certificates/cacert.pem" ]; then
-    [ -z "${CURL_CA_BUNDLE:-}" ] && export CURL_CA_BUNDLE="$ZEROBREW_PREFIX/share/ca-certificates/cacert.pem"
-    [ -z "${SSL_CERT_FILE:-}" ] && export SSL_CERT_FILE="$ZEROBREW_PREFIX/share/ca-certificates/cacert.pem"
-  fi
+    if [ -f "$ZEROBREW_PREFIX/opt/ca-certificates/share/ca-certificates/cacert.pem" ]; then
+        [ -z "${CURL_CA_BUNDLE:-}" ] && export CURL_CA_BUNDLE="$ZEROBREW_PREFIX/opt/ca-certificates/share/ca-certificates/cacert.pem"
+        [ -z "${SSL_CERT_FILE:-}" ] && export SSL_CERT_FILE="$ZEROBREW_PREFIX/opt/ca-certificates/share/ca-certificates/cacert.pem"
+    elif [ -f "$ZEROBREW_PREFIX/etc/ca-certificates/cacert.pem" ]; then
+        [ -z "${CURL_CA_BUNDLE:-}" ] && export CURL_CA_BUNDLE="$ZEROBREW_PREFIX/etc/ca-certificates/cacert.pem"
+        [ -z "${SSL_CERT_FILE:-}" ] && export SSL_CERT_FILE="$ZEROBREW_PREFIX/etc/ca-certificates/cacert.pem"
+    elif [ -f "$ZEROBREW_PREFIX/etc/openssl/cert.pem" ]; then
+        [ -z "${CURL_CA_BUNDLE:-}" ] && export CURL_CA_BUNDLE="$ZEROBREW_PREFIX/etc/openssl/cert.pem"
+        [ -z "${SSL_CERT_FILE:-}" ] && export SSL_CERT_FILE="$ZEROBREW_PREFIX/etc/openssl/cert.pem"
+    elif [ -f "$ZEROBREW_PREFIX/share/ca-certificates/cacert.pem" ]; then
+        [ -z "${CURL_CA_BUNDLE:-}" ] && export CURL_CA_BUNDLE="$ZEROBREW_PREFIX/share/ca-certificates/cacert.pem"
+        [ -z "${SSL_CERT_FILE:-}" ] && export SSL_CERT_FILE="$ZEROBREW_PREFIX/share/ca-certificates/cacert.pem"
+    fi
 fi
 
 if [ -z "${SSL_CERT_DIR:-}" ]; then
-  if [ -d "$ZEROBREW_PREFIX/etc/ca-certificates" ]; then
-    export SSL_CERT_DIR="$ZEROBREW_PREFIX/etc/ca-certificates"
-  elif [ -d "$ZEROBREW_PREFIX/etc/openssl/certs" ]; then
-    export SSL_CERT_DIR="$ZEROBREW_PREFIX/etc/openssl/certs"
-  elif [ -d "$ZEROBREW_PREFIX/share/ca-certificates" ]; then
-    export SSL_CERT_DIR="$ZEROBREW_PREFIX/share/ca-certificates"
-  fi
+    if [ -d "$ZEROBREW_PREFIX/etc/ca-certificates" ]; then
+        export SSL_CERT_DIR="$ZEROBREW_PREFIX/etc/ca-certificates"
+    elif [ -d "$ZEROBREW_PREFIX/etc/openssl/certs" ]; then
+        export SSL_CERT_DIR="$ZEROBREW_PREFIX/etc/openssl/certs"
+    elif [ -d "$ZEROBREW_PREFIX/share/ca-certificates" ]; then
+        export SSL_CERT_DIR="$ZEROBREW_PREFIX/share/ca-certificates"
+    fi
 fi
 
-# Helper function to safely append to PATH
-_zb_path_append() {
+_zb_path_prepend() {
     local argpath="$1"
-    case ":${PATH}:" in
-        *:"$argpath":*) ;;
-        *) export PATH="$argpath:$PATH" ;;
-    esac;
+    case ":$PATH:" in
+        *:"$argpath":*)
+            ;;
+        *)
+            export PATH="$argpath:$PATH"
+            ;;
+    esac
 }
 
-_zb_path_append "$ZEROBREW_BIN"
-_zb_path_append "$ZEROBREW_PREFIX/bin"
+_zb_path_prepend "$ZEROBREW_BIN"
+_zb_path_prepend "$ZEROBREW_PREFIX/bin"
 
-# <<< zerobrew <<<
-# zerobrew wrapper - routes supported commands to zb
 brew() {
-  case "$1" in
-    install|uninstall|list|info|gc)
-      zb "$@"
-      ;;
-    *)
-      command brew "$@"
-      ;;
-  esac
+    case "$1" in
+        install|uninstall|list|info|gc)
+            zb "$@"
+            ;;
+        *)
+            command brew "$@"
+            ;;
+    esac
 }
+
+# nvm
+[ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
+[ -s "$HOME/.nvm/bash_completion" ] && . "$HOME/.nvm/bash_completion"
+
+# secrets
+[ -f "$HOME/.secrets" ] && source "$HOME/.secrets"

@@ -50,6 +50,9 @@ target/
 .obsidian/workspace
 .obsidian/workspace.json
 .obsidian/cache/
+obsidian/.obsidian/plugins/*/main.js
+obsidian/.obsidian/plugins/*/styles.css
+obsidian/.obsidian/plugins/*/lib3/
 
 # Git-related tools
 gh/
@@ -75,4 +78,3 @@ $RECYCLE.BIN/
 *.msixbundle
 *.lnk
 Thumbs.db
-

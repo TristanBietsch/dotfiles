@@ -144,7 +144,7 @@ stow_unlink() {
 # Packages to stow-link (directories with actual config content)
 STOW_PACKAGES=(
     aerospace btop claude codex gh ghostty git karabiner
-    lsd ncspot nvim obsidian ranger stow tmux w3m weather zsh
+    lsd ncspot nvim obsidian ranger tmux w3m weather zsh
 )
 
 link_all() {

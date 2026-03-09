@@ -1,0 +1,3 @@
+[submodule "zerobrew"]
+	path = zerobrew
+	url = https://github.com/lucasgelfond/zerobrew.git

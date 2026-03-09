@@ -1,4 +1,0 @@
-alias ls='lsd'
-alias ll='lsd -la'
-alias la='lsd -a'
-alias lt='lsd --tree'
