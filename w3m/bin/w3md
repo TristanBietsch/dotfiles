@@ -1,2 +1,1 @@
-#!/usr/bin/env sh
-exec w3m -dump -cols 120 "$@"
+/Users/tristan/dotfiles/w3m/bin/w3md
