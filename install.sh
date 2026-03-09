@@ -107,38 +107,69 @@ make_link() {
     log_ok "$target -> $src"
 }
 
-# Stow-style linking: walk the package directory and link leaf files/dirs
-stow_link() {
+ensure_stow() {
+    if ! cmd_exists stow; then
+        log_err "GNU Stow is required for link/uninstall commands"
+        exit 1
+    fi
+}
+
+prepare_stow_conflicts() {
     local pkg_dir="$1"
     local pkg_name
     pkg_name="$(basename "$pkg_dir")"
 
-    log_dbg "processing package: $pkg_name"
-
-    # Walk the package dir, find all files
-    while IFS= read -r -d '' src_file; do
-        local rel="${src_file#$pkg_dir/}"
-        local target="$HOME/$rel"
-        make_link "$src_file" "$target"
-    done < <(find "$pkg_dir" -type f -not -name '.DS_Store' -not -path '*/.git/*' -print0)
-}
-
-stow_unlink() {
-    local pkg_dir="$1"
+    log_dbg "checking conflicts for package: $pkg_name"
 
     while IFS= read -r -d '' src_file; do
         local rel="${src_file#$pkg_dir/}"
         local target="$HOME/$rel"
 
         if [[ -L "$target" && "$(readlink "$target")" == "$src_file" ]]; then
-            if $DRY_RUN; then
-                log_dry "would unlink $target"
-            else
-                rm "$target"
-                log_ok "unlinked $target"
+            continue
+        fi
+
+        if [[ -e "$target" || -L "$target" ]]; then
+            do_backup "$target"
+            if $FORCE && ! $DRY_RUN; then
+                rm -rf "$target"
             fi
         fi
     done < <(find "$pkg_dir" -type f -not -name '.DS_Store' -not -path '*/.git/*' -print0)
+}
+
+run_stow() {
+    local pkg_dir="$1"
+    local pkg_name
+    pkg_name="$(basename "$pkg_dir")"
+    local -a args=(--dir="$DOTFILES_DIR" --target="$HOME" --verbose=1)
+
+    if $DRY_RUN; then
+        args+=(--no)
+    fi
+
+    if $VERBOSE; then
+        args+=(--verbose=2)
+    fi
+
+    stow "${args[@]}" "$pkg_name"
+}
+
+run_unstow() {
+    local pkg_dir="$1"
+    local pkg_name
+    pkg_name="$(basename "$pkg_dir")"
+    local -a args=(--dir="$DOTFILES_DIR" --target="$HOME" --verbose=1 --delete)
+
+    if $DRY_RUN; then
+        args+=(--no)
+    fi
+
+    if $VERBOSE; then
+        args+=(--verbose=2)
+    fi
+
+    stow "${args[@]}" "$pkg_name"
 }
 
 # Packages to stow-link (directories with actual config content)
@@ -148,20 +179,23 @@ STOW_PACKAGES=(
 )
 
 link_all() {
+    ensure_stow
     printf "\n${BLUE}Linking configs...${RESET}\n\n"
     for pkg in "${STOW_PACKAGES[@]}"; do
         local pkg_dir="$DOTFILES_DIR/$pkg"
         [[ -d "$pkg_dir" ]] || continue
-        stow_link "$pkg_dir"
+        prepare_stow_conflicts "$pkg_dir"
+        run_stow "$pkg_dir"
     done
 }
 
 unlink_all() {
+    ensure_stow
     printf "\n${BLUE}Unlinking configs...${RESET}\n\n"
     for pkg in "${STOW_PACKAGES[@]}"; do
         local pkg_dir="$DOTFILES_DIR/$pkg"
         [[ -d "$pkg_dir" ]] || continue
-        stow_unlink "$pkg_dir"
+        run_unstow "$pkg_dir"
     done
 }
 

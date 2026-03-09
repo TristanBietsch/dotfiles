@@ -30,6 +30,10 @@ stow-global-ignore
 *.bak
 *.orig
 
+# ncspot state
+ncspot/.config/ncspot/userstate.cbor
+ncspot/.config/ncspot/*.bak*
+
 # Node projects inside dotfiles (if present)
 node_modules/
 
