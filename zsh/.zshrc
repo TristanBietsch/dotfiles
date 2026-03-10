@@ -8,6 +8,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.opencode/bin:$PATH"
 export PATH="$PATH:$HOME/.lmstudio/bin"
 export PATH="/Library/TeX/texbin:$PATH"
+export FZF_DEFAULT_OPTS_FILE="$HOME/.fzfrc"
 
 # aliases
 alias ls='lsd --tree --depth 1'
@@ -114,3 +115,5 @@ brew() {
 
 # secrets
 [ -f "$HOME/.secrets" ] && source "$HOME/.secrets"
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

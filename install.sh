@@ -174,7 +174,7 @@ run_unstow() {
 
 # Packages to stow-link (directories with actual config content)
 STOW_PACKAGES=(
-    aerospace btop claude codex gh ghostty git karabiner
+    aerospace btop claude codex fzf gh ghostty git karabiner
     lsd ncspot nvim obsidian ranger rmpc tmux w3m weather zsh
 )
 
