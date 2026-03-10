@@ -1,0 +1,6 @@
+#![enable(implicit_some)]
+(
+    address: "127.0.0.1:6600",
+    enable_config_hot_reload: true,
+    enable_mouse: true,
+)
