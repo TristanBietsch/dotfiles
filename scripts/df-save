@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DATE="$(date '+%Y-%m-%d %H:%M:%S')"
+REPO_DIR="${HOME}/src/dwarf-fortress"
+MESSAGE="save game ${DATE}"
+
+exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/df-save-sync" \
+  --repo-dir "$REPO_DIR" \
+  --stow \
+  --push \
+  --message "$MESSAGE" \
+  "$@"

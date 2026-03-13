@@ -1,0 +1,269 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<USAGE
+Usage: $(basename "$0") [--repo-dir PATH] [--remote URL] [--push] [--stow] [--message MSG] [--dry-run]
+
+Sync Dwarf Fortress save data into a separate git repository checkout.
+
+Options:
+  --repo-dir PATH   Local checkout for the save repository
+                    Default: ~/src/dwarf-fortress
+  --remote URL      Git remote to clone if repo-dir does not exist
+                    Default: git@github.com:TristanBietsch/dwarf-fortress.git
+  --push            Push after committing
+  --stow            Run stow from the target repository after syncing
+  --message MSG     Commit message to use
+  --dry-run         Show planned actions without changing files
+  -h, --help        Show this help
+USAGE
+}
+
+REPO_DIR="${HOME}/src/dwarf-fortress"
+REMOTE_URL="git@github.com:TristanBietsch/dwarf-fortress.git"
+PUSH=false
+RUN_STOW=false
+COMMIT_MESSAGE=""
+DRY_RUN=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --repo-dir)
+      REPO_DIR="$2"
+      shift 2
+      ;;
+    --remote)
+      REMOTE_URL="$2"
+      shift 2
+      ;;
+    --push)
+      PUSH=true
+      shift
+      ;;
+    --stow)
+      RUN_STOW=true
+      shift
+      ;;
+    --message)
+      COMMIT_MESSAGE="$2"
+      shift 2
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      printf 'Unknown option: %s\n' "$1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+DF_ROOT="${HOME}/Library/Application Support/Dwarf Fortress"
+SAVE_SRC="${DF_ROOT}/data/save"
+CONFIG_SRC="${DF_ROOT}/data/init"
+PACKAGE_NAME="df-saves"
+TARGET_SAVE_DIR="${REPO_DIR}/${PACKAGE_NAME}/Library/Application Support/Dwarf Fortress/data/save"
+TARGET_CONFIG_DIR="${REPO_DIR}/config/init"
+DOCS_DIR="${REPO_DIR}/docs"
+META_DIR="${REPO_DIR}/meta"
+GITIGNORE_PATH="${REPO_DIR}/.gitignore"
+README_PATH="${DOCS_DIR}/stow.md"
+MANIFEST_PATH="${META_DIR}/manifest.txt"
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || {
+    printf 'Missing required command: %s\n' "$1" >&2
+    exit 1
+  }
+}
+
+log_dry() {
+  printf '[dry-run] %s\n' "$1"
+}
+
+ensure_repo() {
+  if [[ -d "${REPO_DIR}/.git" ]]; then
+    return
+  fi
+
+  if [[ -e "${REPO_DIR}" ]]; then
+    printf 'Path exists but is not a git repo: %s\n' "${REPO_DIR}" >&2
+    exit 1
+  fi
+
+  if $DRY_RUN; then
+    log_dry "would clone ${REMOTE_URL} -> ${REPO_DIR}"
+    return
+  fi
+
+  git clone "${REMOTE_URL}" "${REPO_DIR}"
+}
+
+sync_dir() {
+  local src="$1"
+  local dst="$2"
+  if $DRY_RUN; then
+    log_dry "would rsync ${src}/ -> ${dst}/"
+    return
+  fi
+
+  mkdir -p "$dst"
+  rsync -a --delete "$src/" "$dst/"
+}
+
+write_gitignore() {
+  if $DRY_RUN; then
+    log_dry "would write ${GITIGNORE_PATH}"
+    return
+  fi
+
+  cat > "$GITIGNORE_PATH" <<'EOF_GITIGNORE'
+.DS_Store
+*.log
+*.txt~
+df-saves/Library/Application Support/Dwarf Fortress/data/save/current/save/*.log
+df-saves/Library/Application Support/Dwarf Fortress/data/save/current/save/*.tmp
+df-saves/Library/Application Support/Dwarf Fortress/data/save/current/save/*.bak
+EOF_GITIGNORE
+}
+
+write_docs() {
+  if $DRY_RUN; then
+    log_dry "would write ${README_PATH}"
+    return
+  fi
+
+  mkdir -p "$DOCS_DIR"
+  cat > "$README_PATH" <<'EOF_DOC'
+# Dwarf Fortress Saves
+
+This repository is the stow target for Dwarf Fortress save data.
+
+## Layout
+
+- `df-saves/Library/Application Support/Dwarf Fortress/data/save/`: live save tree managed by GNU Stow
+- `config/init/`: snapshot of the live `data/init` files for reference
+- `meta/manifest.txt`: last sync metadata
+
+## First-time setup
+
+1. Clone this repository locally.
+2. Run `~/dotfiles/scripts/df-save-sync --repo-dir <checkout>` to copy in the current save data.
+3. From the checkout, run:
+   `stow --target="$HOME" --dir="<checkout>" df-saves`
+4. Verify that `~/Library/Application Support/Dwarf Fortress/data/save` points into this repository.
+
+## Ongoing usage
+
+- After playing: run `~/dotfiles/scripts/df-save-sync --repo-dir <checkout> --stow`
+- To restore on a new machine: run `~/dotfiles/scripts/df-save-restore --repo-dir <checkout>`
+- To publish changes: commit and push from this repository, or use `--push` with the sync script
+
+## Notes
+
+- Only save data is stowed from this repository.
+- Dwarf Fortress config remains in the dotfiles repo.
+- Do not commit logs, binaries, or the rest of the app bundle here.
+EOF_DOC
+}
+
+write_manifest() {
+  if $DRY_RUN; then
+    log_dry "would write ${MANIFEST_PATH}"
+    return
+  fi
+
+  mkdir -p "$META_DIR"
+  {
+    printf 'synced_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    printf 'host=%s\n' "$(hostname -s)"
+    printf 'df_root=%s\n' "$DF_ROOT"
+    printf 'package_name=%s\n' "$PACKAGE_NAME"
+    if [[ -x "${DF_ROOT}/df" ]]; then
+      printf 'df_launcher=%s\n' "${DF_ROOT}/df"
+    fi
+    printf 'save_entries=%s\n' "$(find "$SAVE_SRC" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')"
+  } > "$MANIFEST_PATH"
+}
+
+commit_if_needed() {
+  if $DRY_RUN; then
+    log_dry "would git add/commit in ${REPO_DIR}"
+    if $PUSH; then
+      log_dry "would git push from ${REPO_DIR}"
+    fi
+    return
+  fi
+
+  git -C "$REPO_DIR" add .
+
+  if git -C "$REPO_DIR" diff --cached --quiet; then
+    printf 'No changes to commit in %s\n' "$REPO_DIR"
+    return
+  fi
+
+  if [[ -z "$COMMIT_MESSAGE" ]]; then
+    COMMIT_MESSAGE="Sync Dwarf Fortress saves $(date +%Y-%m-%d\ %H:%M:%S)"
+  fi
+
+  git -C "$REPO_DIR" commit -m "$COMMIT_MESSAGE"
+
+  if $PUSH; then
+    git -C "$REPO_DIR" push
+  fi
+}
+
+run_stow() {
+  require_cmd stow
+  if $DRY_RUN; then
+    log_dry "would stow package ${PACKAGE_NAME} from ${REPO_DIR} into ${HOME}"
+    return
+  fi
+
+  stow --target="$HOME" --dir="$REPO_DIR" "$PACKAGE_NAME"
+}
+
+require_cmd git
+require_cmd rsync
+
+if [[ ! -d "$SAVE_SRC" ]]; then
+  printf 'Save directory not found: %s\n' "$SAVE_SRC" >&2
+  exit 1
+fi
+
+if [[ ! -d "$CONFIG_SRC" ]]; then
+  printf 'Config directory not found: %s\n' "$CONFIG_SRC" >&2
+  exit 1
+fi
+
+ensure_repo
+
+if ! $DRY_RUN; then
+  mkdir -p "$TARGET_SAVE_DIR" "$TARGET_CONFIG_DIR"
+else
+  log_dry "would ensure ${TARGET_SAVE_DIR}"
+  log_dry "would ensure ${TARGET_CONFIG_DIR}"
+fi
+
+sync_dir "$SAVE_SRC" "$TARGET_SAVE_DIR"
+sync_dir "$CONFIG_SRC" "$TARGET_CONFIG_DIR"
+write_gitignore
+write_docs
+write_manifest
+
+if $RUN_STOW; then
+  run_stow
+fi
+
+commit_if_needed
+
+printf 'Synced Dwarf Fortress data into %s\n' "$REPO_DIR"
+printf 'To stow saves from that repo, run:\n'
+printf '  stow --target="%s" --dir="%s" %s\n' "$HOME" "$REPO_DIR" "$PACKAGE_NAME"

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<USAGE
+Usage: $(basename "$0") [--repo-dir PATH]
+
+Restore Dwarf Fortress save data from a separate repository checkout.
+USAGE
+}
+
+REPO_DIR="${HOME}/src/dwarf-fortress"
+PACKAGE_NAME="df-saves"
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --repo-dir)
+      REPO_DIR="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      printf 'Unknown option: %s\n' "$1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+SOURCE_DIR="${REPO_DIR}/${PACKAGE_NAME}/Library/Application Support/Dwarf Fortress/data/save"
+TARGET_DIR="${HOME}/Library/Application Support/Dwarf Fortress/data/save"
+
+command -v rsync >/dev/null 2>&1 || {
+  printf 'Missing required command: rsync\n' >&2
+  exit 1
+}
+
+if [[ ! -d "$SOURCE_DIR" ]]; then
+  printf 'Save source not found: %s\n' "$SOURCE_DIR" >&2
+  exit 1
+fi
+
+mkdir -p "$TARGET_DIR"
+rsync -a --delete "$SOURCE_DIR/" "$TARGET_DIR/"
+printf 'Restored Dwarf Fortress saves from %s\n' "$REPO_DIR"
