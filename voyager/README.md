@@ -2,11 +2,10 @@
 
 This directory tracks the source export for the ZSA Voyager layout used in this dotfiles repo.
 
-This layout uses the Colemak-DH keyboard layout.
-
 ## Layouts
 
-- `voyager-colemak/`: unpacked Oryx/QMK source files used for reviewable diffs and future rebuilds
+- `voyager-colemak/`: unpacked Oryx/QMK source files for the Colemak-DH variant
+- `voyager-qwerty/`: unpacked Oryx/QMK source files for the QWERTY variant
 
 ## Artifacts
 
