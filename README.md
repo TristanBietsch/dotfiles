@@ -27,6 +27,7 @@ make uninstall  # remove links and restore backups
 - Top-level directories are Stow packages. Their contents mirror paths under `$HOME`.
 - `install.sh` drives linking, backups, and package installation.
 - `Makefile` is the command entrypoint.
+- Dry-runs show intended operations, but existing unmanaged files or non-Stow symlinks can still block apply.
 - `Brewfile` declares Homebrew packages.
 - `voyager/` holds tracked keyboard layout exports; it is versioned, not stowed.
 
