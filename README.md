@@ -1,31 +1,6 @@
 # dotfiles
 
-## philosophy
-
-These files define an operating environment, not a theme. The machine is treated as infrastructure. Input is keyboard-first. Tools are small, composable, and quiet. Configuration is explicit. Behavior should stay predictable under repetition. Visual noise is kept low so state, text, and process remain visible.
-
-## stack
-
-- TODO: shell
-- TODO: editor
-- TODO: terminal
-- TODO: package manager
-- TODO: window manager
-
-## repo_layout
-
-```text
-.
-├── zsh/
-├── nvim/
-├── ghostty/
-├── git/
-├── tmux/
-├── aerospace/
-├── stow/
-├── install.sh
-└── Makefile
-```
+Personal macOS/Linux dotfiles managed with GNU Stow and a small install script.
 
 ## install
 
@@ -35,11 +10,32 @@ cd dotfiles
 make install
 ```
 
-## principles
+## commands
 
-- small tools
-- text first
-- composability
-- reproducibility
-- minimal surface area
-- explicit configuration
+```sh
+make install    # link configs and install packages
+make dry-run    # show planned changes
+make link       # link configs only
+make brew       # install Homebrew packages from Brewfile
+make packages   # install system packages
+make update     # pull latest changes and reinstall
+make uninstall  # remove links and restore backups
+```
+
+## layout
+
+- Top-level directories are Stow packages. Their contents mirror paths under `$HOME`.
+- `install.sh` drives linking, backups, and package installation.
+- `Makefile` is the command entrypoint.
+- `Brewfile` declares Homebrew packages.
+- `voyager/` holds tracked keyboard layout exports; it is versioned, not stowed.
+
+## stack
+
+- shell: zsh
+- editor: nvim
+- terminal: ghostty, tmux
+- git: git, gh
+- windowing/input: aerospace, karabiner
+- cli: btop, fzf, lsd, ranger, w3m
+- apps/state: claude, codex, ncspot, obsidian, opencode, rmpc, weather
