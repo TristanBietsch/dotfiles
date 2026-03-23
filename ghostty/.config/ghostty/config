@@ -1,17 +1,19 @@
 # window
-background-opacity = 0.7
+# background-opacity = 0.7
 macos-titlebar-style = transparent
-window-theme = auto
-background-blur-radius = 40
+window-theme = dark
+# background-blur-radius = 40
 window-padding-x = 0
 window-padding-y = 0
-window-padding-color = background
 window-decoration = false
+window-colorspace = display-p3
+window-padding-balance = true
+window-padding-color = background
+macos-window-shadow = false
 
 # auto update settings
 auto-update = download
 auto-update-channel = stable
-
 
 # Add GitHub Dark DeWfault theme colors
 theme = GitHub Dark Default
@@ -28,7 +30,6 @@ font-family = FiraCode Nerd Font Mono
 font-size = 13
 
 # shaders
-
 custom-shader-animation = always
 custom-shader = shaders/cursor_warp.glsl
 
