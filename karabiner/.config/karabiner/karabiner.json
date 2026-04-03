@@ -1,8 +1,24 @@
 {
+    "global": { "show_in_menu_bar": false },
     "profiles": [
         {
             "complex_modifications": {
                 "rules": [
+                    {
+                        "description": "F19 → Activate Shortcat",
+                        "manipulators": [
+                            {
+                                "from": { "key_code": "f19" },
+                                "to": [
+                                    {
+                                        "key_code": "s",
+                                        "modifiers": ["control", "option", "command"]
+                                    }
+                                ],
+                                "type": "basic"
+                            }
+                        ]
+                    },
                     {
                         "description": "Change right_command+mnei to arrow keys",
                         "manipulators": [
