@@ -247,7 +247,7 @@ install_brew_packages() {
         log_dry "would run: brew bundle --file=$brewfile"
         return
     fi
-    brew bundle --file="$brewfile" --no-lock
+    brew bundle --file="$brewfile"
     log_ok "Homebrew packages installed"
 }
 

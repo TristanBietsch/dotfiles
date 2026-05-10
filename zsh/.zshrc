@@ -118,7 +118,5 @@ brew() {
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# Added by Antigravity
-export PATH="/Users/tristan/.antigravity/antigravity/bin:$PATH"
 alias dwarf='open /Applications/Dwarf\ Fortress.app'
 alias df-save='$HOME/dotfiles/scripts/df-save'
