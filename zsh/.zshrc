@@ -1,4 +1,5 @@
-PROMPT='%n@%m %~ ∴ '
+PROMPT='%n@%m %~ λ '
+# PROMPT='%n@%m %~ ∴ '
 
 # PATH
 export PATH="$HOME/.local/bin:$PATH"
