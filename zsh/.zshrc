@@ -1,4 +1,4 @@
-PROMPT='%n@%m %~ $ '
+PROMPT='%n@%m %~ ∴ '
 
 # PATH
 export PATH="$HOME/.local/bin:$PATH"
@@ -21,6 +21,7 @@ alias browse='w3md'
 alias files='ranger'
 alias pn='pnpm'
 alias utmctl='/Applications/UTM.app/Contents/MacOS/utmctl'
+alias cc='claude --dangerously-skip-permissions'
 
 # functions
 vm() {
@@ -112,7 +113,6 @@ brew() {
 
 # nvm
 [ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
-[ -s "$HOME/.nvm/bash_completion" ] && . "$HOME/.nvm/bash_completion"
 
 # secrets
 [ -f "$HOME/.secrets" ] && source "$HOME/.secrets"
@@ -121,3 +121,5 @@ brew() {
 
 alias dwarf='open /Applications/Dwarf\ Fortress.app'
 alias df-save='$HOME/dotfiles/scripts/df-save'
+export PATH="$PATH:/Users/tristan/go/bin"
+export AGENC_RUNNER_DIR=/Users/tristan/Documents/pediment/agenc-cli/runner-ts
