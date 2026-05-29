@@ -42,5 +42,5 @@ require("lazy").setup({
 	require("plugins.toggleTerm"),
 	require("plugins.avante"),
 	require("plugins.harpoon"),
-	require("plugins.diagram"),
+	require("plugins.markdownPreview"),
 })
