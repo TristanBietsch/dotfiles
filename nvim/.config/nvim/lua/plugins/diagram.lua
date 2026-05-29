@@ -27,22 +27,24 @@ return {
 		"3rd/diagram.nvim",
 		dependencies = { "3rd/image.nvim" },
 		ft = { "markdown" },
-		opts = {
-			events = {
-				render_buffer = { "InsertLeave", "BufWinEnter", "TextChanged" },
-				clear_buffer = { "BufLeave" },
-			},
-			integrations = {
-				require("diagram.integrations.markdown"),
-			},
-			renderer_options = {
-				mermaid = {
-					background = "transparent",
-					theme = "dark",
-					scale = 2,
+		opts = function()
+			return {
+				events = {
+					render_buffer = { "InsertLeave", "BufWinEnter", "TextChanged" },
+					clear_buffer = { "BufLeave" },
 				},
-			},
-		},
+				integrations = {
+					require("diagram.integrations.markdown"),
+				},
+				renderer_options = {
+					mermaid = {
+						background = "transparent",
+						theme = "dark",
+						scale = 2,
+					},
+				},
+			}
+		end,
 		keys = {
 			{
 				"<leader>md",
