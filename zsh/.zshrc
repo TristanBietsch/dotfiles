@@ -17,12 +17,12 @@ alias ll='lsd -la'
 alias la='lsd -a'
 alias lt='lsd --tree'
 alias c='clear'
-alias claude='claude --dangerously-skip-permissions'
 alias browse='w3md'
 alias files='ranger'
 alias pn='pnpm'
 alias utmctl='/Applications/UTM.app/Contents/MacOS/utmctl'
 alias cc='claude --dangerously-skip-permissions'
+alias ai='ollama run qwen3:30b-a3b'
 
 # functions
 vm() {
@@ -120,7 +120,17 @@ brew() {
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+# Added by Antigravity
+export PATH="/Users/tristan/.antigravity/antigravity/bin:$PATH"
 alias dwarf='open /Applications/Dwarf\ Fortress.app'
 alias df-save='$HOME/dotfiles/scripts/df-save'
 export PATH="$PATH:/Users/tristan/go/bin"
 export AGENC_RUNNER_DIR=/Users/tristan/Documents/pediment/agenc-cli/runner-ts
+
+alias job='/Users/tristan/Documents/personal/job-search/career-ops/dashboard/career-dashboard --path /Users/tristan/Documents/personal/job-search/career-ops'
+
+# BEGIN REX
+export PATH="$HOME/.local/bin:$PATH"
+autoload -Uz compinit && compinit -i
+source <(rex completion zsh 2>/dev/null) || true
+# END REX
