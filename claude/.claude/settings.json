@@ -2,9 +2,9 @@
   "permissions": {
     "allow": [],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "defaultMode": "auto"
   },
-  "model": "opus",
   "hooks": {
     "PreToolUse": [
       {
@@ -87,7 +87,47 @@
     "code-simplifier@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
-    "ralph-loop@claude-plugins-official": true
+    "ralph-loop@claude-plugins-official": true,
+    "vercel@claude-plugins-official": true,
+    "devcore@crouton-kit": true,
+    "skill-creator@claude-plugins-official": true,
+    "i-have-adhd@i-have-adhd": true,
+    "caveman@caveman": true
   },
-  "effortLevel": "high"
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/claude-plugins-official"
+      }
+    },
+    "crouton-kit": {
+      "source": {
+        "source": "github",
+        "repo": "CaptainCrouton89/crouton-kit"
+      }
+    },
+    "i-have-adhd": {
+      "source": {
+        "source": "github",
+        "repo": "ayghri/i-have-adhd"
+      }
+    },
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "juliusbrussee/caveman"
+      }
+    }
+  },
+  "effortLevel": "high",
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "dark",
+  "skipAutoPermissionPrompt": true,
+  "model": "opus",
+  "statusLine": {
+    "type": "command",
+    "command": "sh -c 'for f in \"$HOME\"/.claude/plugins/cache/caveman/caveman/*/src/hooks/caveman-statusline.sh; do :; done; bash \"$f\"'"
+  }
 }
