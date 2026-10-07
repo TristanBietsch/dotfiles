@@ -34,6 +34,8 @@ return {
 		"folke/snacks.nvim",
 		"nvim-tree/nvim-web-devicons",
 		"zbirenbaum/copilot.lua",
+		"ColinKennedy/mega.cmdparse",
+		"ColinKennedy/mega.logging",
 
 		{
 			"HakonHarnes/img-clip.nvim",

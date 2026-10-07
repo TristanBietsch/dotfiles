@@ -2,6 +2,7 @@
 require("core.options")
 require("core.keymaps")
 require("core.snippets")
+require("core.autoreload").setup()
 
 -- lazy.nvim bootstrap
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -43,4 +44,6 @@ require("lazy").setup({
 	require("plugins.avante"),
 	require("plugins.harpoon"),
 	require("plugins.markdownPreview"),
+	require("plugins.claudeCode"),
+	require("plugins.diffview"),
 })

@@ -16,11 +16,17 @@ vim.opt.formatoptions:remove { 'c', 'r', 'o' }               -- no auto comments
 vim.opt.iskeyword:append '-'                                 -- treat hyphen as word
 
 -- files
+vim.o.autoread                  = true                       -- reload on external change
 vim.o.backup                    = false                      -- no backup
 vim.o.fileencoding              = 'utf-8'                    -- encoding
 vim.o.swapfile                  = false                      -- no swapfile
 vim.o.undofile                  = true                       -- undo file
 vim.o.writebackup               = false                      -- no write backup
+
+vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI' }, {
+	pattern = '*',
+	command = "if mode() !~ '\\v(c|r.?|!|t)' && getcmdwintype() == '' | checktime | endif",
+})
 
 -- misc
 vim.o.backspace                 = 'indent,eol,start'         -- backspace anywhere
