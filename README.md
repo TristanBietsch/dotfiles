@@ -1,35 +1,47 @@
 # dotfiles
 
-Personal macOS/Linux dotfiles managed with GNU Stow and a small install script.
+Personal macOS dotfiles, managed with GNU Stow.
 
 ## install
 
 ```sh
-git clone <repo>
-cd dotfiles
-make install
+git clone <repo> ~/dotfiles
+cd ~/dotfiles
+./install.sh
 ```
 
-## commands
+The script does three things:
+
+1. Installs Homebrew if it isn't there.
+2. Runs `brew bundle` — that installs Stow and everything else in `Brewfile`.
+3. Symlinks each package into `$HOME` with `stow -R --no-folding`.
+
+Re-run it any time. It is idempotent.
+
+## packages
+
+Each top-level directory is a Stow package. Its contents mirror paths under `$HOME`:
+
+```
+nvim/.config/nvim/init.lua   ->   ~/.config/nvim/init.lua
+```
+
+## manual stow
+
+To link, preview, or remove one package by hand:
 
 ```sh
-make install    # link configs and install packages
-make dry-run    # show planned changes
-make link       # link configs only
-make brew       # install Homebrew packages from Brewfile
-make packages   # install system packages
-make update     # pull latest changes and reinstall
-make uninstall  # remove links and restore backups
+stow -R --no-folding -t ~ <pkg>   # link or re-link
+stow -n  --no-folding -t ~ <pkg>  # preview (dry run)
+stow -D  -t ~ <pkg>               # unlink
 ```
 
-## layout
+`--no-folding` is required. It tells Stow to symlink files one at a time instead of folding whole directories, so a config that shares a directory with unmanaged files won't get clobbered.
 
-- Top-level directories are Stow packages. Their contents mirror paths under `$HOME`.
-- `install.sh` drives linking, backups, and package installation.
-- `Makefile` is the command entrypoint.
-- Dry-runs show intended operations, but existing unmanaged files or non-Stow symlinks can still block apply.
-- `Brewfile` declares Homebrew packages.
-- `voyager/` holds tracked keyboard layout exports; it is versioned, not stowed.
+## not stowed
+
+- `voyager/` — keyboard layout exports. Versioned here, but not linked into `$HOME`.
+- `zerobrew/` — separate project, tracked here.
 
 ## stack
 

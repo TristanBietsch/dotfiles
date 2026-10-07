@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Strip any sisyphus / third-party tmux status injection from the running
+# server, then reload the minimal config from ~/.tmux.conf.
+set -euo pipefail
+
+CONF="${TMUX_CONF:-$HOME/.tmux.conf}"
+
+if [ ! -f "$CONF" ]; then
+    echo "tmux-reset: $CONF not found" >&2
+    exit 1
+fi
+
+if tmux info >/dev/null 2>&1; then
+    tmux set-option -gu @sisyphus_left   >/dev/null 2>&1 || true
+    tmux set-option -gu @sisyphus_right  >/dev/null 2>&1 || true
+    tmux set-option -gu status-left      >/dev/null 2>&1 || true
+    tmux set-option -gu status-right     >/dev/null 2>&1 || true
+    tmux set-option -g  status-left  ""
+    tmux set-option -g  status-right ""
+    tmux source-file "$CONF"
+    echo "tmux-reset: applied $CONF to running server"
+else
+    echo "tmux-reset: no tmux server running; nothing to reload"
+fi

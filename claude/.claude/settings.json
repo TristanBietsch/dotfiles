@@ -5,6 +5,7 @@
     "ask": [],
     "defaultMode": "auto"
   },
+  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
@@ -77,6 +78,10 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "sh -c 'for f in \"$HOME\"/.claude/plugins/cache/caveman/caveman/*/src/hooks/caveman-statusline.sh; do :; done; bash \"$f\"'"
+  },
   "enabledPlugins": {
     "code-review@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
@@ -121,13 +126,13 @@
     }
   },
   "effortLevel": "high",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "skipAutoPermissionPrompt": true,
-  "model": "opus",
-  "statusLine": {
-    "type": "command",
-    "command": "sh -c 'for f in \"$HOME\"/.claude/plugins/cache/caveman/caveman/*/src/hooks/caveman-statusline.sh; do :; done; bash \"$f\"'"
-  }
+  "skipAutoPermissionPrompt": true
 }

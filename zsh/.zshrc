@@ -134,3 +134,6 @@ export PATH="$HOME/.local/bin:$PATH"
 autoload -Uz compinit && compinit -i
 source <(rex completion zsh 2>/dev/null) || true
 # END REX
+
+# rustup (Homebrew, keg-only)
+export PATH="/opt/homebrew/opt/rustup/bin:$PATH"
