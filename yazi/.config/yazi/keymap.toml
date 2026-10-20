@@ -1,0 +1,4 @@
+[mgr]
+prepend_keymap = [
+	{ on = "<Esc>", run = "escape", desc = "Exit visual mode, clear selection, or cancel search" },
+]

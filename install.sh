@@ -14,7 +14,7 @@ cd "$(dirname "$0")"
 
 PACKAGES=(
 	aerospace btop claude codex fzf gh ghostty git karabiner
-	lsd ncspot nvim obsidian opencode ranger rmpc tmux w3m weather zsh
+	lsd ncspot nvim obsidian opencode ranger rmpc tmux w3m weather yazi zsh
 )
 
 if ! command -v brew >/dev/null; then

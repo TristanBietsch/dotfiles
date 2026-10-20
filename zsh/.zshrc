@@ -137,3 +137,13 @@ source <(rex completion zsh 2>/dev/null) || true
 
 # rustup (Homebrew, keg-only)
 export PATH="/opt/homebrew/opt/rustup/bin:$PATH"
+
+# yazi: cd into last dir on quit.
+y() {
+	local tmp="$(mktemp -t yazi-cwd.XXXXXX)" cwd
+	yazi "$@" --cwd-file="$tmp"
+	if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+		builtin cd -- "$cwd"
+	fi
+	rm -f -- "$tmp"
+}
