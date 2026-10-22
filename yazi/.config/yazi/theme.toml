@@ -1,0 +1,122 @@
+# minimal monochrome, matches ghostty (black bg) + tmux (white-on-black status)
+
+[mgr]
+cwd = { fg = "white", bold = true }
+
+find_keyword  = { fg = "white", bold = true, underline = true }
+find_position = { fg = "gray", italic = true }
+
+symlink_target = { fg = "darkgray", italic = true }
+
+marker_copied   = { fg = "white", bg = "white" }
+marker_cut      = { fg = "darkgray", bg = "darkgray" }
+marker_marked   = { fg = "gray", bg = "gray" }
+marker_selected = { fg = "white", bg = "white" }
+marker_symbol   = "│"
+
+count_copied   = { fg = "black", bg = "white" }
+count_cut      = { fg = "black", bg = "gray" }
+count_selected = { fg = "black", bg = "white" }
+
+border_symbol = "│"
+border_style  = { fg = "darkgray" }
+
+[tabs]
+active    = { fg = "black", bg = "white" }
+inactive  = { fg = "white" }
+sep_inner = { open = " ", close = " " }
+sep_outer = { open = "", close = "" }
+
+[mode]
+normal_main = { fg = "black", bg = "white" }
+normal_alt  = { fg = "white" }
+select_main = { fg = "black", bg = "gray" }
+select_alt  = { fg = "gray" }
+unset_main  = { fg = "black", bg = "gray" }
+unset_alt   = { fg = "gray" }
+
+[indicator]
+parent  = { fg = "black", bg = "gray" }
+current = { fg = "black", bg = "white" }
+preview = { underline = true }
+padding = { open = "", close = "" }
+
+[status]
+overall   = {}
+sep_left  = { open = "", close = "" }
+sep_right = { open = "", close = "" }
+
+perm_sep   = { fg = "darkgray" }
+perm_type  = { fg = "white" }
+perm_read  = { fg = "gray" }
+perm_write = { fg = "gray" }
+perm_exec  = { fg = "gray" }
+
+progress_label  = { fg = "white" }
+progress_normal = { fg = "white", bg = "black" }
+progress_error  = { fg = "red", bg = "black" }
+
+[which]
+border          = { fg = "darkgray" }
+cand            = { fg = "white", bold = true }
+rest            = { fg = "darkgray" }
+desc            = { fg = "gray" }
+separator_style = { fg = "darkgray" }
+
+[confirm]
+border  = { fg = "darkgray" }
+title   = { fg = "white" }
+btn_yes = { fg = "black", bg = "white" }
+
+[spot]
+border   = { fg = "darkgray" }
+title    = { fg = "white" }
+tbl_col  = { fg = "white" }
+tbl_cell = { fg = "black", bg = "white" }
+
+[notify]
+title_info  = { fg = "white" }
+title_warn  = { fg = "gray" }
+title_error = { fg = "red" }
+
+[pick]
+border = { fg = "darkgray" }
+active = { fg = "black", bg = "white" }
+
+[input]
+border   = { fg = "darkgray" }
+selected = { fg = "black", bg = "white" }
+
+[cmp]
+border = { fg = "darkgray" }
+active = { fg = "black", bg = "white" }
+
+[tasks]
+border  = { fg = "darkgray" }
+hovered = { fg = "black", bg = "white" }
+
+[help]
+border  = { fg = "darkgray" }
+chord   = { fg = "white", bold = true }
+hovered = { fg = "black", bg = "white" }
+
+[filetype]
+rules = [
+	{ url = "*/", fg = "white", bold = true },
+	{ url = "*", is = "orphan", fg = "red" },
+	{ url = "*", is = "exec", fg = "white" },
+	{ url = "*", is = "link", fg = "gray", italic = true },
+	{ url = "*", fg = "gray" },
+]
+
+[icon]
+globs = []
+dirs  = []
+files = []
+exts  = []
+conds = [
+	{ if = "dir", text = "", fg = "white" },
+	{ if = "link", text = "", fg = "gray" },
+	{ if = "exec", text = "", fg = "gray" },
+	{ if = "!dir", text = "", fg = "gray" },
+]
