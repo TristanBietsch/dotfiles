@@ -5,6 +5,7 @@ return {
     'nvim-tree/nvim-web-devicons',
   },
   config = function()
+    local p = require('core.palette')
     require('bufferline').setup {
       options = {
         mode = 'buffers', -- set to "tabs" to only show tabpages instead
@@ -43,7 +44,7 @@ return {
       },
       highlights = {
         separator = {
-          fg = '#434C5E',
+          fg = p.border,
         },
         buffer_selected = {
           bold = true,

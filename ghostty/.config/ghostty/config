@@ -15,16 +15,11 @@ macos-window-shadow = false
 auto-update = download
 auto-update-channel = stable
 
-# Add GitHub Dark DeWfault theme colors
-theme = GitHub Dark Default
-background = 000000
-foreground = f0f6f6
-selection-background = 264f78
-selection-foreground = f0f6fc
+# colors: generated from theme/themes/<active>/colors.env by theme/build.sh
+config-file = colors
 
 cursor-style = block
 cursor-style-blink = true
-cursor-color = f5f5f5
 
 font-family = FiraCode Nerd Font Mono
 font-size = 13

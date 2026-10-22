@@ -1,6 +1,7 @@
 return {
   'nvim-lualine/lualine.nvim',
   config = function()
+    local p = require('core.palette')
     local mode = {
       'mode',
       fmt = function(str)
@@ -44,26 +45,26 @@ return {
 
         theme = {
           normal = {
-            a = { fg = "#FFFFFF", bg = "none", gui = "bold" },
-            b = { fg = "#FFFFFF", bg = "none" },
-            c = { fg = "#FFFFFF", bg = "none" },
+            a = { fg = p.fg, bg = "none", gui = "bold" },
+            b = { fg = p.fg, bg = "none" },
+            c = { fg = p.fg, bg = "none" },
           },
           insert = {
-            a = { fg = "#FFFFFF", bg = "none", gui = "bold" },
+            a = { fg = p.fg, bg = "none", gui = "bold" },
           },
           visual = {
-            a = { fg = "#FFFFFF", bg = "none", gui = "bold" },
+            a = { fg = p.fg, bg = "none", gui = "bold" },
           },
           replace = {
-            a = { fg = "#FFFFFF", bg = "none", gui = "bold" },
+            a = { fg = p.fg, bg = "none", gui = "bold" },
           },
           command = {
-            a = { fg = "#FFFFFF", bg = "none", gui = "bold" },
+            a = { fg = p.fg, bg = "none", gui = "bold" },
           },
           inactive = {
-            a = { fg = "#FFFFFF", bg = "none" },
-            b = { fg = "#FFFFFF", bg = "none" },
-            c = { fg = "#FFFFFF", bg = "none" },
+            a = { fg = p.fg, bg = "none" },
+            b = { fg = p.fg, bg = "none" },
+            c = { fg = p.fg, bg = "none" },
           },
         },
 
