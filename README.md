@@ -50,5 +50,5 @@ stow -D  -t ~ <pkg>               # unlink
 - terminal: ghostty, tmux
 - git: git, gh
 - windowing/input: aerospace, karabiner
-- cli: btop, fzf, lsd, ranger, w3m, yazi
+- cli: btop, fzf, lsd, w3m, yazi
 - apps/state: claude, codex, ncspot, obsidian, opencode, rmpc, weather
