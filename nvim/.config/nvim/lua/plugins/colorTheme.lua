@@ -42,6 +42,10 @@ return {
       groups = {
         github_dark_default = {
           Cursor = { fg = p.bg, bg = p.cursor },
+          StatusLine = { fg = p.fg, bg = 'NONE' },
+          StatusLineNC = { fg = p.fg_dim, bg = 'NONE' },
+          StatusLineTerm = { fg = p.fg, bg = 'NONE' },
+          StatusLineTermNC = { fg = p.fg_dim, bg = 'NONE' },
           NeoTreeDirectoryIcon = { fg = p.dir },
           NeoTreeDirectoryName = { fg = p.dir },
           NeoTreeRootName = { fg = p.dir, style = 'bold' },
