@@ -109,14 +109,3 @@ rules = [
 	{ url = "*", fg = "gray" },
 ]
 
-[icon]
-globs = []
-dirs  = []
-files = []
-exts  = []
-conds = [
-	{ if = "dir", text = "", fg = "white" },
-	{ if = "link", text = "", fg = "gray" },
-	{ if = "exec", text = "", fg = "gray" },
-	{ if = "!dir", text = "", fg = "gray" },
-]
