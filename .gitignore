@@ -85,3 +85,9 @@ Thumbs.db
 
 # Karabiner auto backups (written into the linked config dir)
 karabiner/.config/karabiner/automatic_backups/
+
+# Work-specific Claude skills: kept local, never pushed (public repo)
+claude/.claude/skills/ob/
+claude/.claude/skills/pres/
+claude/.claude/skills/prmsg/
+claude/.claude/skills/rmsg/

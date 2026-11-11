@@ -36,4 +36,10 @@ for pkg in "${PACKAGES[@]}"; do
 	fi
 done
 
+if command -v claude >/dev/null; then
+	echo "==> Claude skills and plugins"
+	"$HOME/.local/bin/claude-skills" sync
+	"$HOME/.local/bin/claude-skills" check
+fi
+
 echo "==> Done"

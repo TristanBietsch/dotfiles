@@ -1,0 +1,28 @@
+# Vendored Claude Code skills, pinned. Edit a row, run `claude-skills sync`, review the diff, commit.
+# Columns (tab-separated): name repo path sha exclude(comma list of paths to drop, or -)
+# Review notes for each source: skills/INSTALLED.md
+solana-dev	solana-foundation/solana-dev-skill	skills/solana-dev	a265d11fcc1b0cfbbbe9dfe9deda57fd3c210eee	-
+svm	helius-labs/core-ai	helius-skills/svm	8deb43816578f69f7bdf9f687fd83e23a258bc62	install.sh
+squads	sendaifun/skills	skills/squads	06b36b8b420e705ffd57b29e463f01093959d8d4	-
+surfpool	sendaifun/skills	skills/surfpool	06b36b8b420e705ffd57b29e463f01093959d8d4	-
+zz-code-recon	sendaifun/skills	skills/zz-code-recon	06b36b8b420e705ffd57b29e463f01093959d8d4	-
+vulnhunter	sendaifun/skills	skills/vulnhunter	06b36b8b420e705ffd57b29e463f01093959d8d4	-
+write-a-prd	mattpocock/skills	write-a-prd	a77fa6e7a6726f687aa36455b27ed8b7d09afdff	-
+request-refactor-plan	mattpocock/skills	skills/deprecated/request-refactor-plan	f958fa17c1b62c3f7be38fc09512669acf6b64fc	agents
+qa	mattpocock/skills	skills/deprecated/qa	f958fa17c1b62c3f7be38fc09512669acf6b64fc	agents
+terminal-title	bluzername/claude-code-terminal-title	skill/terminal-title	c405953699e48d878eec65861abcb5cce193c4be	scripts/set_title.ps1
+prompt-engineering	NeoLabHQ/context-engineering-kit	plugins/customaize-agent/skills/prompt-engineering	23e2428e809d77717f8acc9659c374a3a1fcb93e	-
+software-architecture	NeoLabHQ/context-engineering-kit	plugins/ddd/skills/software-architecture	387a64fb31934ce6186f1de223e0b52148eba17b	-
+postgres	sanjay3290/ai-skills	skills/postgres	c84255839a1bfaa06d681aa528f9b50d70002afb	-
+openspec-apply-change	Fission-AI/OpenSpec	skills/openspec-apply-change	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-archive-change	Fission-AI/OpenSpec	skills/openspec-archive-change	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-bulk-archive-change	Fission-AI/OpenSpec	skills/openspec-bulk-archive-change	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-continue-change	Fission-AI/OpenSpec	skills/openspec-continue-change	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-explore	Fission-AI/OpenSpec	skills/openspec-explore	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-ff-change	Fission-AI/OpenSpec	skills/openspec-ff-change	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-new-change	Fission-AI/OpenSpec	skills/openspec-new-change	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-onboard	Fission-AI/OpenSpec	skills/openspec-onboard	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-propose	Fission-AI/OpenSpec	skills/openspec-propose	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-sync-specs	Fission-AI/OpenSpec	skills/openspec-sync-specs	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-update-change	Fission-AI/OpenSpec	skills/openspec-update-change	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-
+openspec-verify-change	Fission-AI/OpenSpec	skills/openspec-verify-change	a959be77cf045ea3156dc5089c9e2f1d6ce9ce70	-

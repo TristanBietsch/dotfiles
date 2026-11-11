@@ -1,0 +1,16 @@
+# Trigger tests for `claude-skills test`: expected skill, then a prompt that should load it.
+# Each prompt runs headless with only the Skill tool enabled and no MCP servers.
+write-a-prd	Write a PRD for adding CSV export to our billing dashboard.
+request-refactor-plan	I want to plan a refactor of our auth module into small safe incremental commits.
+qa	Let's do a QA session. I found a few bugs in the checkout flow I want to report.
+openspec-propose	Use OpenSpec to propose a new change that adds rate limiting to the public API.
+prompt-engineering	Improve this system prompt for my support chatbot so outputs are more reliable: "You are helpful."
+software-architecture	How should I structure the domain layer and module boundaries for a new order management service?
+postgres	Query my PostgreSQL database and show the 10 most recent rows in the orders table.
+terrashark	Write a Terraform module for an S3 bucket with versioning and encryption.
+overkill	Give me the overkill, over-engineered approach to building a URL shortener.
+systematic-debugging	The API returns HTTP 500 intermittently in production. Help me trace the root cause.
+brainstorming	I want to build a new team notifications feature. Let's brainstorm the design before coding.
+algorithmic-art	Create generative algorithmic art with p5.js using flow fields.
+mcp-builder	Build an MCP server that wraps our internal weather REST API.
+solana-dev	Write an Anchor program for a simple token vault on Solana.

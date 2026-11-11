@@ -1,0 +1,237 @@
+#!/usr/bin/env bash
+# claude-skills — keep Claude Code skills and plugins reproducible from dotfiles.
+#
+#   claude-skills sync    vendor skills.tsv rows at their pinned SHA into the
+#                         stow package, then install plugins enabled in settings.json
+#   claude-skills check   offline lint of the installed state (exit 1 on any FAIL)
+#   claude-skills test    headless trigger tests from triggers.tsv (exit 1 on any FAIL)
+#
+# Files (all in the `claude` stow package, linked into $HOME):
+#   ~/.claude/skills.tsv     name  repo  path  sha  exclude   (exclude: comma list or -)
+#   ~/.claude/triggers.tsv   skill  prompt
+#   ~/.claude/settings.json  enabledPlugins + extraKnownMarketplaces are the plugin list
+#
+# Deps: bash, git, jq, tar, claude.
+#
+# Skills are auto-selected by Claude Code from each SKILL.md description, so a
+# skill is "automatic" when it is installed, enabled, and does not set
+# disable-model-invocation. `check` enforces exactly that.
+
+set -euo pipefail
+
+self=$(readlink -f "${BASH_SOURCE[0]}")
+PKG=$(cd "$(dirname "$self")/../.." && pwd) # dotfiles/claude
+CLAUDE_HOME=${CLAUDE_HOME:-$HOME/.claude}
+VENDOR=$PKG/.claude/skills
+MANIFEST=$PKG/.claude/skills.tsv
+TRIGGERS=$PKG/.claude/triggers.tsv
+SETTINGS=$PKG/.claude/settings.json
+TEST_TIMEOUT=${CLAUDE_SKILLS_TEST_TIMEOUT:-180}
+TEST_JOBS=${CLAUDE_SKILLS_TEST_JOBS:-4}
+
+die() { printf 'claude-skills: %s\n' "$*" >&2; exit 1; }
+rows() { grep -v -e '^#' -e '^[[:space:]]*$' "$1"; }
+
+# ---------------------------------------------------------------- sync
+
+vendor_one() {
+	local name=$1 repo=$2 path=$3 sha=$4 exclude=$5
+	[[ $name =~ ^[A-Za-z0-9._-]+$ ]] || die "bad skill name: $name"
+	[[ $sha =~ ^[0-9a-f]{40}$ ]] || die "$name: sha must be 40 hex chars"
+	local dest=$VENDOR/$name stamp="$repo@$sha:$path"
+
+	if [[ -f $dest/.source && $(<"$dest/.source") == "$stamp" ]]; then
+		printf '  = %s\n' "$name"
+		return
+	fi
+
+	local src=$CACHE/${repo//\//_}@$sha
+	if [[ ! -d $src ]]; then
+		git init -q "$src"
+		git -C "$src" fetch -q --depth 1 "https://github.com/$repo" "$sha"
+	fi
+	git -C "$src" cat-file -e "FETCH_HEAD:$path/SKILL.md" 2>/dev/null ||
+		die "$name: $path/SKILL.md not found at $repo@$sha"
+
+	local depth
+	depth=$(awk -F/ '{print NF}' <<<"$path")
+	rm -rf -- "$dest"
+	mkdir -p -- "$dest"
+	git -C "$src" archive FETCH_HEAD "$path" | tar -x -C "$dest" --strip-components "$depth"
+	if [[ $exclude != - ]]; then
+		local x
+		IFS=, read -ra xs <<<"$exclude"
+		for x in "${xs[@]}"; do rm -rf -- "${dest:?}/$x"; done
+	fi
+	printf '%s\n' "$stamp" >"$dest/.source"
+	printf '  + %s  (%s@%.7s)\n' "$name" "$repo" "$sha"
+}
+
+sync_skills() {
+	echo "==> Vendoring skills from skills.tsv"
+	CACHE=$(mktemp -d)
+	while IFS=$'\t' read -r name repo path sha exclude; do
+		vendor_one "$name" "$repo" "$path" "$sha" "${exclude:--}"
+	done < <(rows "$MANIFEST")
+	rm -rf -- "$CACHE"
+}
+
+sync_plugins() {
+	echo "==> Installing plugins enabled in settings.json"
+	local known installed m repo id
+	known=$(claude plugin marketplace list --json | jq -r '.[].name')
+	while IFS=$'\t' read -r m repo; do
+		grep -qx "$m" <<<"$known" && continue
+		echo "  + marketplace $m ($repo)"
+		claude plugin marketplace add "$repo" >/dev/null
+	done < <(jq -r '.extraKnownMarketplaces | to_entries[] | [.key, .value.source.repo] | @tsv' "$SETTINGS")
+
+	installed=$(claude plugin list --json | jq -r '.[].id')
+	while read -r id; do
+		if grep -qx "$id" <<<"$installed"; then
+			printf '  = %s\n' "$id"
+		else
+			printf '  + %s\n' "$id"
+			claude plugin install --scope user "$id" >/dev/null
+		fi
+	done < <(jq -r '.enabledPlugins | to_entries[] | select(.value) | .key' "$SETTINGS")
+}
+
+cmd_sync() {
+	sync_skills
+	sync_plugins
+	# `claude plugin install` may rewrite settings.json in place of the stow link.
+	relink_settings
+}
+
+relink_settings() {
+	local live=$CLAUDE_HOME/settings.json
+	[[ -L $live ]] && return
+	[[ -e $live ]] && mv -- "$live" "$live.pre-stow.$(date +%Y%m%d%H%M%S)"
+	stow -R --no-folding -d "$(dirname "$PKG")" -t "$HOME" "$(basename "$PKG")"
+	echo "==> Relinked $live (old copy kept as settings.json.pre-stow.*)"
+}
+
+# ---------------------------------------------------------------- check
+
+FAILS=0
+ok() { printf '  PASS  %s\n' "$*"; }
+ko() { printf '  FAIL  %s\n' "$*"; FAILS=$((FAILS + 1)); }
+
+frontmatter() { awk 'NR==1 && $0!="---"{exit} NR>1 && $0=="---"{exit} NR>1' "$1"; }
+
+check_skill_dir() {
+	local dir=$1 label=$2 fm
+	if [[ ! -f $dir/SKILL.md ]]; then
+		ko "$label: no SKILL.md"
+		return
+	fi
+	fm=$(frontmatter "$dir/SKILL.md")
+	if ! grep -q '^name:' <<<"$fm" || ! grep -q '^description:' <<<"$fm"; then
+		ko "$label: frontmatter lacks name/description"
+	elif grep -Eq '^disable-model-invocation:[[:space:]]*true' <<<"$fm"; then
+		ko "$label: disable-model-invocation is true (never auto-loads)"
+	else
+		ok "$label"
+	fi
+}
+
+cmd_check() {
+	echo "==> Settings"
+	if jq empty "$SETTINGS" 2>/dev/null; then ok "settings.json is valid JSON"; else ko "settings.json invalid JSON"; fi
+	if [[ $(readlink -f "$CLAUDE_HOME/settings.json") == "$(readlink -f "$SETTINGS")" ]]; then
+		ok "~/.claude/settings.json links to dotfiles"
+	else
+		ko "~/.claude/settings.json is not the dotfiles link (run: claude-skills sync)"
+	fi
+
+	echo "==> Vendored skills (skills.tsv)"
+	local name repo path sha exclude live
+	while IFS=$'\t' read -r name repo path sha exclude; do
+		live=$CLAUDE_HOME/skills/$name
+		if [[ $(readlink -f "$live/SKILL.md") != "$VENDOR/$name/SKILL.md" ]]; then
+			ko "$name: not stowed into ~/.claude/skills"
+		elif [[ ! -f $VENDOR/$name/.source || $(<"$VENDOR/$name/.source") != "$repo@$sha:$path" ]]; then
+			ko "$name: vendored copy differs from pinned sha (run: claude-skills sync)"
+		else
+			check_skill_dir "$live" "$name"
+		fi
+	done < <(rows "$MANIFEST")
+
+	echo "==> Own skills (in dotfiles, not in skills.tsv)"
+	local d
+	for d in "$VENDOR"/*/; do
+		d=${d%/}
+		[[ -f $d/.source ]] && continue
+		check_skill_dir "$d" "$(basename "$d")"
+	done
+
+	echo "==> Plugins"
+	local installed id
+	installed=$(claude plugin list --json | jq -r '.[] | select(.enabled) | .id')
+	while read -r id; do
+		if grep -qx "$id" <<<"$installed"; then ok "$id"; else ko "$id: enabled in settings but not installed+enabled"; fi
+	done < <(jq -r '.enabledPlugins | to_entries[] | select(.value) | .key' "$SETTINGS")
+
+	echo "==> Hooks"
+	local hook
+	while read -r hook; do
+		local f=${hook#bash }
+		f=${f/#\~/$HOME}
+		if [[ -f $f ]]; then ok "hook file exists: $hook"; else ko "hook file missing: $hook"; fi
+	done < <(jq -r '.hooks // {} | .[][] | .hooks[] | .command | select(startswith("bash "))' "$SETTINGS")
+
+	((FAILS == 0)) && echo "==> check: PASS" || { echo "==> check: FAIL ($FAILS)"; return 1; }
+}
+
+# ---------------------------------------------------------------- test
+
+# Run one trigger case. Prints "PASS|FAIL<TAB>expected<TAB>got".
+# Only the Skill tool and no MCP servers are available, so a test prompt can
+# load a skill but cannot run commands, edit files, or reach external services.
+test_one() {
+	local expected=$1 prompt=$2 dir out got pid watchdog
+	dir=$(mktemp -d)
+	out=$dir/out.jsonl
+	(cd "$dir" && exec claude -p "$prompt" --output-format stream-json --verbose \
+		--tools Skill --strict-mcp-config --no-session-persistence \
+		</dev/null >"$out" 2>/dev/null) &
+	pid=$!
+	(sleep "$TEST_TIMEOUT" && kill "$pid" 2>/dev/null) &
+	watchdog=$!
+	wait "$pid" 2>/dev/null || true
+	{ kill "$watchdog" && wait "$watchdog"; } 2>/dev/null || true
+	got=$(jq -r 'select(.type=="assistant") | .message.content[]?
+		| select(.type=="tool_use" and .name=="Skill") | .input.skill // .input.command' "$out" 2>/dev/null |
+		paste -sd, -)
+	rm -rf -- "$dir"
+	local verdict=FAIL s
+	IFS=, read -ra seen <<<"$got"
+	for s in "${seen[@]}"; do
+		[[ $s == "$expected" || $s == *":$expected" ]] && verdict=PASS
+	done
+	printf '%s\t%s\t%s\n' "$verdict" "$expected" "${got:--}"
+}
+
+cmd_test() {
+	local results
+	echo "==> Trigger tests (${TEST_JOBS} parallel, ${TEST_TIMEOUT}s timeout each)"
+	results=$(rows "$TRIGGERS" | while IFS=$'\t' read -r s p; do printf '%s\0%s\0' "$s" "$p"; done |
+		xargs -0 -n 2 -P "$TEST_JOBS" "$self" _test_one)
+	printf 'RESULT\tEXPECTED\tLOADED\n%s\n' "$results" | column -t -s $'\t'
+	local fails
+	fails=$(grep -c '^FAIL' <<<"$results" || true)
+	((fails == 0)) && echo "==> test: PASS" || { echo "==> test: FAIL ($fails)"; return 1; }
+}
+
+# ---------------------------------------------------------------- main
+
+for dep in git jq tar claude stow; do command -v "$dep" >/dev/null || die "missing dependency: $dep"; done
+
+case ${1:-} in
+sync) cmd_sync ;;
+check) cmd_check ;;
+test) cmd_test ;;
+_test_one) test_one "$2" "$3" ;;
+*) sed -n '2,9s/^# \{0,1\}//p' "$self"; exit 2 ;;
+esac
