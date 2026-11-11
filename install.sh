@@ -44,6 +44,17 @@ if [ -d /Applications/Raycast.app ]; then
 	defaults import com.raycast.macos raycast/com.raycast.macos.plist
 fi
 
+# Free Cmd+Space for Raycast: turn off Spotlight's "Show Spotlight search"
+# (64, Cmd+Space) and "Show Finder search window" (65, Cmd+Opt+Space).
+echo "==> Disabling Spotlight shortcuts"
+for id in 64 65; do
+	mods=1048576
+	[ "$id" = 65 ] && mods=1572864
+	defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add "$id" \
+		"<dict><key>enabled</key><false/><key>value</key><dict><key>type</key><string>standard</string><key>parameters</key><array><integer>32</integer><integer>49</integer><integer>$mods</integer></array></dict></dict>"
+done
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u
+
 if command -v claude >/dev/null; then
 	echo "==> Claude skills and plugins"
 	"$HOME/.local/bin/claude-skills" sync
