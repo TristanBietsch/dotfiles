@@ -140,9 +140,9 @@ cmd_check() {
 	echo "==> Settings"
 	if jq empty "$SETTINGS" 2>/dev/null; then ok "settings.json is valid JSON"; else ko "settings.json invalid JSON"; fi
 	if [[ $(readlink -f "$CLAUDE_HOME/settings.json") == "$(readlink -f "$SETTINGS")" ]]; then
-		ok "~/.claude/settings.json links to dotfiles"
+		ok "$CLAUDE_HOME/settings.json links to dotfiles"
 	else
-		ko "~/.claude/settings.json is not the dotfiles link (run: claude-skills sync)"
+		ko "$CLAUDE_HOME/settings.json is not the dotfiles link (run: claude-skills sync)"
 	fi
 
 	echo "==> Vendored skills (skills.tsv)"
@@ -181,7 +181,11 @@ cmd_check() {
 		if [[ -f $f ]]; then ok "hook file exists: $hook"; else ko "hook file missing: $hook"; fi
 	done < <(jq -r '.hooks // {} | .[][] | .hooks[] | .command | select(startswith("bash "))' "$SETTINGS")
 
-	((FAILS == 0)) && echo "==> check: PASS" || { echo "==> check: FAIL ($FAILS)"; return 1; }
+	if ((FAILS > 0)); then
+		echo "==> check: FAIL ($FAILS)"
+		return 1
+	fi
+	echo "==> check: PASS"
 }
 
 # ---------------------------------------------------------------- test
@@ -221,7 +225,11 @@ cmd_test() {
 	printf 'RESULT\tEXPECTED\tLOADED\n%s\n' "$results" | column -t -s $'\t'
 	local fails
 	fails=$(grep -c '^FAIL' <<<"$results" || true)
-	((fails == 0)) && echo "==> test: PASS" || { echo "==> test: FAIL ($fails)"; return 1; }
+	if ((fails > 0)); then
+		echo "==> test: FAIL ($fails)"
+		return 1
+	fi
+	echo "==> test: PASS"
 }
 
 # ---------------------------------------------------------------- main
