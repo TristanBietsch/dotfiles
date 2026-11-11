@@ -5,6 +5,7 @@ tap "anomalyco/tap"
 tap "yakitrak/yakitrak"
 
 # Core daily tools.
+brew "bottom"
 brew "btop"
 brew "elixir"
 brew "fd"

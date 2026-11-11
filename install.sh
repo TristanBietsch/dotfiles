@@ -13,7 +13,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 PACKAGES=(
-	aerospace agy btop claude codex fzf gh ghostty git karabiner
+	aerospace agy bottom btop claude codex fzf gh ghostty git karabiner
 	lsd ncspot nvim obsidian opencode rmpc tmux w3m weather yazi zsh
 )
 
@@ -27,6 +27,7 @@ brew bundle --file=Brewfile
 
 echo "==> Linking configs"
 for pkg in "${PACKAGES[@]}"; do
+	[ -d "$pkg" ] || continue
 	# Karabiner ignores changes to a symlinked karabiner.json; it needs the
 	# whole ~/.config/karabiner directory linked, so let stow fold it.
 	if [ "$pkg" = karabiner ]; then

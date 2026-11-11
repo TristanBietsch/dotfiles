@@ -1,0 +1,43 @@
+# bottom (btm) configuration
+# https://github.com/ClementTsang/bottom
+
+[flags]
+# How often data is refreshed (minimum 250ms, default 1s)
+rate = "1s"
+
+# Temperature unit: "c" (Celsius), "f" (Fahrenheit), or "k" (Kelvin)
+temperature_type = "c"
+
+# Default time interval for graphs
+default_time_value = "60s"
+
+# Time delta on zoom
+time_delta = 15000
+
+# Show battery widget if a battery is present
+battery = true
+
+# Use tree mode by default in process widget
+tree = true
+
+# Show memory values in process widget as values rather than percent
+process_memory_as_value = true
+
+# Calculate process CPU usage as percentage of current usage rather than total
+current_usage = true
+
+# Show scroll position tracker in table widgets
+show_table_scroll_position = true
+
+[processes]
+default_tree = true
+default_memory_value = true
+current_usage = true
+default_sort = "CPU%"
+
+[disk]
+use_binary_prefix = true
+
+[styles]
+# Built-in themes: "default", "default-light", "gruvbox", "gruvbox-light", "nord", "nord-light"
+theme = "default"
