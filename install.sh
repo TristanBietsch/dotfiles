@@ -13,7 +13,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 PACKAGES=(
-	aerospace btop claude codex fzf gh ghostty git karabiner
+	aerospace agy btop claude codex fzf gh ghostty git karabiner
 	lsd ncspot nvim obsidian opencode rmpc tmux w3m weather yazi zsh
 )
 

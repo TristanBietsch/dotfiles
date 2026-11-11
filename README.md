@@ -72,4 +72,4 @@ To add or update a skill, edit its row in `skills.tsv`, run `claude-skills sync`
 - git: git, gh
 - windowing/input: aerospace, karabiner
 - cli: btop, fzf, lsd, w3m, yazi
-- apps/state: claude, codex, ncspot, obsidian, opencode, rmpc, weather
+- apps/state: agy, claude, codex, ncspot, obsidian, opencode, rmpc, weather

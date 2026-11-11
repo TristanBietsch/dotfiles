@@ -1,0 +1,8 @@
+{
+  "artifactReviewPolicy": "agent-decides",
+  "runningLightSpeed": "fast",
+  "toolPermission": "always-proceed",
+  "trustedWorkspaces": [
+    "/Users/tristan"
+  ]
+}

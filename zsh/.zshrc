@@ -25,6 +25,7 @@ alias files='y'
 alias pn='pnpm'
 alias utmctl='/Applications/UTM.app/Contents/MacOS/utmctl'
 alias cc='claude --dangerously-skip-permissions'
+alias agy='agy --dangerously-skip-permissions'
 alias ai='ollama run qwen3:30b-a3b'
 
 # functions
