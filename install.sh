@@ -27,7 +27,13 @@ brew bundle --file=Brewfile
 
 echo "==> Linking configs"
 for pkg in "${PACKAGES[@]}"; do
-	stow -R --no-folding -t "$HOME" "$pkg"
+	# Karabiner ignores changes to a symlinked karabiner.json; it needs the
+	# whole ~/.config/karabiner directory linked, so let stow fold it.
+	if [ "$pkg" = karabiner ]; then
+		stow -R -t "$HOME" "$pkg"
+	else
+		stow -R --no-folding -t "$HOME" "$pkg"
+	fi
 done
 
 echo "==> Done"

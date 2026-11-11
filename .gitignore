@@ -82,3 +82,6 @@ $RECYCLE.BIN/
 *.msixbundle
 *.lnk
 Thumbs.db
+
+# Karabiner auto backups (written into the linked config dir)
+karabiner/.config/karabiner/automatic_backups/

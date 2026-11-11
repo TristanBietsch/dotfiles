@@ -105,6 +105,11 @@ _zb_path_prepend "$ZEROBREW_BIN"
 _zb_path_prepend "$ZEROBREW_PREFIX/bin"
 
 brew() {
+    # zb doesn't handle casks; fall back to brew when zb is absent too
+    if ! (( $+commands[zb] )) || (( ${@[(I)--cask]} )); then
+        command brew "$@"
+        return
+    fi
     case "$1" in
         install|uninstall|list|info|gc)
             zb "$@"
@@ -150,3 +155,15 @@ y() {
 	fi
 	rm -f -- "$tmp"
 }
+
+export SSH_AUTH_SOCK="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/tristan/.local/bin:$PATH"
