@@ -37,6 +37,13 @@ for pkg in "${PACKAGES[@]}"; do
 	fi
 done
 
+# Raycast rewrites its plist through cfprefsd, which replaces a symlink with a
+# regular file, so import the settings instead of stowing them.
+if [ -d /Applications/Raycast.app ]; then
+	echo "==> Raycast preferences"
+	defaults import com.raycast.macos raycast/com.raycast.macos.plist
+fi
+
 if command -v claude >/dev/null; then
 	echo "==> Claude skills and plugins"
 	"$HOME/.local/bin/claude-skills" sync

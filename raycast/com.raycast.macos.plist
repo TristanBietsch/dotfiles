@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSStatusItem Preferred Position raycastIcon</key>
+	<real>519.0</real>
+	<key>onboardingCompleted</key>
+	<true/>
+	<key>raycastGlobalHotkey</key>
+	<string>Command-49</string>
+	<key>raycastPreferredWindowMode</key>
+	<string>default</string>
+	<key>raycastShouldFollowSystemAppearance</key>
+	<true/>
+	<key>showGettingStartedLink</key>
+	<false/>
+	<key>store_termsAccepted</key>
+	<true/>
+	<key>useHyperKeyIcon</key>
+	<false/>
+</dict>
+</plist>
