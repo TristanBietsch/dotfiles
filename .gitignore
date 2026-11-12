@@ -60,7 +60,6 @@ obsidian/.obsidian/plugins/*/lib3/
 
 # Git-related tools
 gh/
-git/
 
 # SSH/GPG private keys (critical if you're symlinking .ssh)
 *.pem
@@ -91,3 +90,69 @@ claude/.claude/skills/ob/
 claude/.claude/skills/pres/
 claude/.claude/skills/prmsg/
 claude/.claude/skills/rmsg/
+
+# ---- Sensitive: never commit (defense in depth) ----
+# Private keys / certs / keystores
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.gpg
+*.asc
+*.age
+*.kdbx
+id_rsa*
+id_ecdsa*
+id_ed25519*
+!*.pub
+.ssh/
+.gnupg/
+
+# Env / credential files
+.env
+.env.*
+!.env.example
+*.env
+.envrc
+.netrc
+.npmrc
+.pypirc
+.pgpass
+.git-credentials
+credentials
+credentials.json
+*credentials*.json
+*-credentials*
+service-account*.json
+token.json
+*.token
+*_token*
+secrets.*
+*.secrets
+.secrets/
+
+# Tool auth/state dirs
+.aws/
+.config/gh/hosts.yml
+.config/op/
+.op/
+.docker/config.json
+.kube/
+.terraform/
+*.tfstate
+*.tfstate.*
+.vault-token
+
+# Solana keypairs
+*keypair*.json
+.config/solana/id.json
+
+# Shell history
+.*_history
+.zsh_history
+.bash_history
+
+# Timestamped backups (e.g. .zshrc.bak.123)
+*.bak.*
+!theme/themes/**/colors.env
