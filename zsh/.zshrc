@@ -25,9 +25,12 @@ alias files='y'
 alias pn='pnpm'
 alias utmctl='/Applications/UTM.app/Contents/MacOS/utmctl'
 alias cc='claude --dangerously-skip-permissions'
+alias aa='antigravity --dangerously-skip-permissions'
 alias agy='agy --dangerously-skip-permissions'
+alias antigravity='antigravity --dangerously-skip-permissions'
 alias ai='ollama run qwen3:30b-a3b'
 alias bottom='btm'
+alias tvm='ssh -4 -p 2222 -i ~/.ssh/beos_local -o IdentitiesOnly=yes tristan@127.0.0.1'
 
 # functions
 vm() {
@@ -169,3 +172,17 @@ export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
 
 # Added by Antigravity CLI installer
 export PATH="/Users/tristan/.local/bin:$PATH"
+
+# BEGIN opam configuration
+# This is useful if you're using opam as it adds:
+#   - the correct directories to the PATH
+#   - auto-completion for the opam binary
+# This section can be safely removed at any time if needed.
+[[ ! -r '/Users/tristan/.opam/opam-init/init.zsh' ]] || source '/Users/tristan/.opam/opam-init/init.zsh' > /dev/null 2> /dev/null; true
+# END opam configuration
+
+# >>> grok installer >>>
+export PATH="$HOME/.grok/bin:$PATH"
+fpath=(~/.grok/completions/zsh $fpath)
+autoload -Uz compinit && compinit -C
+# <<< grok installer <<<
