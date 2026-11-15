@@ -10,6 +10,7 @@ Personal dotfiles for macOS, Arch Linux, NixOS and FreeBSD, managed with GNU Sto
 | Linking | stow | stow | stow (via `nix-shell` if missing) | stow |
 | Commit signing | 1Password | 1Password | 1Password | ssh-agent |
 | aerospace, karabiner, raycast | yes | no | no | no |
+| Tested | linking only; full run with `brew bundle` **untested** | full run (Docker) | linking (container); **untested** on real NixOS | **untested**; package names checked only |
 | Details | below | [docs/os/arch.md](docs/os/arch.md) | [docs/os/nixos.md](docs/os/nixos.md) | [docs/os/freebsd.md](docs/os/freebsd.md) |
 
 ## install

@@ -1,5 +1,7 @@
 # FreeBSD
 
+> **Untested.** `install.sh` has not been run on FreeBSD yet. Only the names in `packages/freebsd.txt` were checked against the package indexes.
+
 ## install
 
 `install.sh` is a bash script, and FreeBSD ships without bash. Bootstrap as root first:
