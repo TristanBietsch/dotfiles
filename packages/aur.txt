@@ -1,0 +1,7 @@
+# Arch User Repository packages. Installed by install.sh with paru after
+# packages/arch.txt. Review each PKGBUILD the first time paru shows it.
+
+claude-code
+marp-cli-bin
+openai-codex-bin
+posting

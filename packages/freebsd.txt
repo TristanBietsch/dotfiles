@@ -1,0 +1,55 @@
+# FreeBSD packages. Installed by install.sh with `pkg install`.
+# Mirrors ../Brewfile; see docs/os/freebsd.md for gaps.
+
+# Bootstrap.
+bash
+git
+stow
+zsh
+
+# Core daily tools.
+bottom
+btop
+elixir
+fd-find
+fzf
+gemini-cli
+gh
+go
+jq
+lsd
+neovim
+neomutt
+py312-pipx
+ripgrep
+rust
+hs-ShellCheck
+tmux
+tree-sitter
+uv
+w3m
+yazi
+yt-dlp
+zig
+zoxide
+ffmpeg
+ImageMagick7
+poppler-utils
+7-zip
+opencode
+bun
+node
+npm
+
+# Clipboard for nvim and tmux.
+wl-clipboard
+xclip
+
+# Apps.
+ghostty
+kitty
+ncspot
+claude-code
+
+# Fonts.
+nerd-fonts

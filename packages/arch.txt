@@ -1,0 +1,58 @@
+# Arch Linux packages (official repos). Installed by install.sh with
+# `pacman -S --needed`. Mirrors ../Brewfile; see docs/os/arch.md for gaps.
+
+# Bootstrap.
+base-devel
+git
+stow
+zsh
+
+# Core daily tools.
+bottom
+btop
+elixir
+fd
+fzf
+gemini-cli
+github-cli
+go
+jq
+lsd
+neovim
+neomutt
+python-pipx
+pnpm
+ripgrep
+rmpc
+rust
+shellcheck
+tmux
+tree-sitter-cli
+typescript
+uv
+w3m
+yazi
+yt-dlp
+zig
+zoxide
+ffmpeg
+imagemagick
+poppler
+resvg
+7zip
+opencode
+bun
+
+# Clipboard for nvim and tmux.
+wl-clipboard
+xclip
+
+# Apps.
+ghostty
+kitty
+ncspot
+
+# Fonts.
+ttf-firacode-nerd
+ttf-hack-nerd
+ttf-nerd-fonts-symbols
