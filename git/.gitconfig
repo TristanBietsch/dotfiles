@@ -26,7 +26,6 @@
     format = ssh
 
 [gpg "ssh"]
-    program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
     allowedSignersFile = ~/.config/git/allowed_signers
 
 [commit]
@@ -34,3 +33,7 @@
 
 [tag]
     gpgsign = true
+
+# Platform signing program, written by install.sh. See git/.config/git/os/.
+[include]
+    path = ~/.config/git/os.gitconfig

@@ -1,0 +1,4 @@
+# NixOS: sign with the 1Password app's SSH agent. Needs
+# programs._1password-gui.enable = true, which puts op-ssh-sign on PATH.
+[gpg "ssh"]
+    program = op-ssh-sign

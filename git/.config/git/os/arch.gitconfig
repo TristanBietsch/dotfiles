@@ -1,0 +1,3 @@
+# Arch Linux: sign with the 1Password app's SSH agent (AUR: 1password).
+[gpg "ssh"]
+    program = /opt/1Password/op-ssh-sign

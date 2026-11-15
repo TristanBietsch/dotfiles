@@ -1,0 +1,2 @@
+# FreeBSD: 1Password has no build here. Git signs with plain ssh-keygen, so
+# load the signing key into ssh-agent (or forward an agent over SSH).
