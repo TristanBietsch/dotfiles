@@ -35,6 +35,7 @@ zoxide
 ffmpeg
 ImageMagick7
 poppler-utils
+resvg
 7-zip
 opencode
 bun
@@ -50,6 +51,7 @@ ghostty
 kitty
 ncspot
 claude-code
+codex
 
 # Fonts.
 nerd-fonts
