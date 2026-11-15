@@ -1,5 +1,10 @@
 {
   "artifactReviewPolicy": "agent-decides",
+  "permissions": {
+    "allow": [
+      "command(ls)"
+    ]
+  },
   "runningLightSpeed": "slow",
   "trustedWorkspaces": [
     "/Users/tristan"
