@@ -1,6 +1,16 @@
 # dotfiles
 
-Personal macOS dotfiles, managed with GNU Stow.
+Personal dotfiles for macOS, Arch Linux, NixOS and FreeBSD, managed with GNU Stow.
+
+## support
+
+| | macOS | Arch Linux | NixOS | FreeBSD |
+|---|---|---|---|---|
+| Packages | Homebrew, `Brewfile` | pacman + paru, `packages/arch.txt` + `packages/aur.txt` | declarative, `nix/packages.nix` | pkg, `packages/freebsd.txt` |
+| Linking | stow | stow | stow (via `nix-shell` if missing) | stow |
+| Commit signing | 1Password | 1Password | 1Password | ssh-agent |
+| aerospace, karabiner, raycast | yes | no | no | no |
+| Details | below | [docs/os/arch.md](docs/os/arch.md) | [docs/os/nixos.md](docs/os/nixos.md) | [docs/os/freebsd.md](docs/os/freebsd.md) |
 
 ## install
 
@@ -10,13 +20,35 @@ cd ~/dotfiles
 ./install.sh
 ```
 
-The script does three things:
+Before running it:
 
-1. Installs Homebrew if it isn't there.
-2. Runs `brew bundle` — that installs Stow and everything else in `Brewfile`.
-3. Symlinks each package into `$HOME` with `stow -R --no-folding`.
+- **Arch:** run as a normal user with `sudo`; install `git` first.
+- **NixOS:** import `nix/packages.nix` into your system config and rebuild first. See [docs/os/nixos.md](docs/os/nixos.md).
+- **FreeBSD:** `pkg install bash git sudo` as root first.
 
-Re-run it any time. It is idempotent.
+The script detects the platform, then:
+
+1. Installs packages: Homebrew and `brew bundle` on macOS, `pacman` then `paru` on Arch, `pkg` on FreeBSD. NixOS is skipped.
+2. Symlinks each package into `$HOME` with `stow -R --no-folding`. `aerospace` and `karabiner` are macOS only.
+3. Points git at the platform's signing config (see [per-OS config](#per-os-config)).
+4. macOS only: imports Raycast preferences and frees Cmd+Space from Spotlight.
+
+Re-run it any time. It is idempotent. `NONINTERACTIVE=1 ./install.sh` answers yes to package-manager prompts.
+
+## per-OS config
+
+Shared files stay identical everywhere. Platform-specific settings live in small fragments:
+
+| What | Fragments | Picked by |
+|---|---|---|
+| zsh | `zsh/.config/zsh/os/{darwin,linux,freebsd}.zsh` | `.zshrc`, from `$OSTYPE` |
+| git signing | `git/.config/git/os/{darwin,arch,nixos,freebsd}.gitconfig` | `~/.config/git/os.gitconfig`, written by `install.sh` |
+
+`.gitconfig` includes `~/.config/git/os.gitconfig`. That file is generated, not tracked. To set it by hand:
+
+```sh
+git config --file ~/.config/git/os.gitconfig include.path os/<darwin|arch|nixos|freebsd>.gitconfig
+```
 
 ## packages
 
@@ -61,6 +93,10 @@ To add or update a skill, edit its row in `skills.tsv`, run `claude-skills sync`
 
 ## not stowed
 
+- `packages/`, `nix/` — package lists for Arch, FreeBSD and NixOS.
+- `docs/` — per-OS install notes.
+- `raycast/` — imported with `defaults import` on macOS, not linked.
+- `theme/` — color source and generator; see `theme/README.md`.
 - `voyager/` — keyboard layout exports. Versioned here, but not linked into `$HOME`.
 - `zerobrew/` — separate project, tracked here.
 
@@ -70,6 +106,6 @@ To add or update a skill, edit its row in `skills.tsv`, run `claude-skills sync`
 - editor: nvim
 - terminal: ghostty, tmux
 - git: git, gh
-- windowing/input: aerospace, karabiner
+- windowing/input (macOS): aerospace, karabiner, raycast
 - cli: bottom, btop, fzf, lsd, w3m, yazi
 - apps/state: agy, claude, codex, ncspot, obsidian, opencode, rmpc, weather
