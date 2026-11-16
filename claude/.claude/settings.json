@@ -5,7 +5,7 @@
     "ask": [],
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5-2",
+  "model": "opus",
   "hooks": {
     "UserPromptSubmit": [
       {
