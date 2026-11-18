@@ -49,8 +49,13 @@ Named `solana-mcp-server` because solana-dev's SKILL.md auto-installs under that
 ### Reviewed and not installed (2026-11-10)
 
 - Composio `*-automation` skills: need the third-party Rube MCP (rube.app), which routes Gmail/Slack/Jira/Drive data through Composio. First-party connectors already cover these.
+- grill-me (mattpocock/skills @ 5863806, reviewed 2026-11-18): one-line wrapper that calls `grilling` and sets `disable-model-invocation: true`, so `claude-skills check` would always FAIL. Say "grill me" instead.
 - git-guardrails-claude-code: global hook blocks `git push`. Declined.
 - `@c0x12c/ai-toolkit`: writes into the current repo's `.claude/`. It overlaps superpowers and mattpocock.
+
+### Added 2026-11-18
+
+- grilling (mattpocock/skills @ 5863806): markdown only, no scripts, no network, writes no files. Auto-loads on "grill" phrases (say "grill me"). Tells the agent to dispatch sub-agents to look up facts. `agents/openai.yaml` excluded.
 
 ## Update procedure
 
