@@ -29,6 +29,7 @@ alias antigravity='antigravity --dangerously-skip-permissions'
 alias ai='ollama run qwen3:30b-a3b'
 alias bottom='btm'
 alias tvm='ssh -4 -p 2222 -i ~/.ssh/beos_local -o IdentitiesOnly=yes tristan@127.0.0.1'
+alias pipes='pipes.sh'
 
 # tool integrations
 # envman
