@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# pre-commit: block Claude Code state and secrets in staged files.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+STATE_RE=$(sed -n "s/^STATE_RE='\(.*\)'$/\1/p" scripts/check.sh)
+if hits=$(git diff --cached --name-only --diff-filter=ACMR | grep -E "$STATE_RE"); then
+	echo "pre-commit: Claude Code state staged, refusing:" >&2
+	printf '  %s\n' "$hits" >&2
+	exit 1
+fi
+if ! command -v trufflehog >/dev/null; then
+	echo "pre-commit: trufflehog not installed (brew bundle --file=Brewfile)" >&2
+	exit 1
+fi
+files=()
+while IFS= read -r -d '' f; do [[ -f $f && ! -L $f ]] && files+=("$f"); done < <(git diff --cached --name-only -z --diff-filter=ACMR)
+((${#files[@]})) || exit 0
+out=$(trufflehog filesystem --no-verification --no-update --exclude-detectors=Hunter --json "${files[@]}" 2>/dev/null |
+	jq -r '"\(.SourceMetadata.Data.Filesystem.file):\(.SourceMetadata.Data.Filesystem.line // "?") \(.DetectorName)"' || true)
+if [[ -n $out ]]; then
+	echo "pre-commit: possible secrets (file:line detector):" >&2
+	printf '  %s\n' "$out" >&2
+	exit 1
+fi
+
+# Public repo: no Slack IDs or private deny-list terms in staged content.
+if git remote get-url origin 2>/dev/null | grep -Eq 'github\.com[:/]TristanBietsch/dotfiles(\.git)?$'; then
+	if hits=$(git grep --cached -n -I -E '\b[CDGU]0[A-Z0-9]{8,10}\b' -- . ':!obsidian/' | cut -d: -f1,2); [[ -n $hits ]]; then
+		echo "pre-commit: Slack IDs staged in the public repo:" >&2
+		printf '  %s\n' "$hits" >&2
+		exit 1
+	fi
+	deny=${DOTFILES_PUBLIC_DENY:-$HOME/dotfiles-work/work/public-deny.txt}
+	if [[ -f $deny ]] && hits=$(git grep --cached -n -I -i -E -f <(grep -v -e '^#' -e '^$' "$deny") -- . ':!obsidian/' | cut -d: -f1,2) && [[ -n $hits ]]; then
+		echo "pre-commit: private deny-list terms staged in the public repo:" >&2
+		printf '  %s\n' "$hits" >&2
+		exit 1
+	fi
+fi

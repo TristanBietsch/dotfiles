@@ -1,0 +1,2 @@
+# Solana layer trigger tests. Same columns as ~/.claude/triggers.tsv.
+solana-dev	Write an Anchor program for a simple token vault on Solana.

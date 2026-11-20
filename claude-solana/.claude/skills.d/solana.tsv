@@ -1,0 +1,5 @@
+# Solana layer skills. Same columns as ~/.claude/skills.tsv; vendored into claude-solana/.claude/skills/.
+solana-dev	solana-foundation/solana-dev-skill	skills/solana-dev	a265d11fcc1b0cfbbbe9dfe9deda57fd3c210eee	-
+svm	helius-labs/core-ai	helius-skills/svm	8deb43816578f69f7bdf9f687fd83e23a258bc62	install.sh
+squads	sendaifun/skills	skills/squads	06b36b8b420e705ffd57b29e463f01093959d8d4	-
+surfpool	sendaifun/skills	skills/surfpool	06b36b8b420e705ffd57b29e463f01093959d8d4	-

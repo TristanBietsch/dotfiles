@@ -11,6 +11,10 @@
 #   ~/.claude/triggers.tsv   skill  prompt
 #   ~/.claude/settings.json  enabledPlugins + extraKnownMarketplaces are the plugin list
 #
+# Layer packages (sibling dirs named claude-<layer>/ in the same repo) add:
+#   claude-<layer>/.claude/skills.d/*.tsv    vendored into claude-<layer>/.claude/skills/
+#   claude-<layer>/.claude/triggers.d/*.tsv
+#
 # Deps: bash, git, jq, tar, claude.
 #
 # Skills are auto-selected by Claude Code from each SKILL.md description, so a
@@ -21,6 +25,7 @@ set -euo pipefail
 
 self=$(readlink -f "${BASH_SOURCE[0]}")
 PKG=$(cd "$(dirname "$self")/../.." && pwd) # dotfiles/claude
+REPO=$(dirname "$PKG")
 CLAUDE_HOME=${CLAUDE_HOME:-$HOME/.claude}
 VENDOR=$PKG/.claude/skills
 MANIFEST=$PKG/.claude/skills.tsv
@@ -32,13 +37,35 @@ TEST_JOBS=${CLAUDE_SKILLS_TEST_JOBS:-4}
 die() { printf 'claude-skills: %s\n' "$*" >&2; exit 1; }
 rows() { grep -v -e '^#' -e '^[[:space:]]*$' "$1"; }
 
+# Print "<manifest>\t<vendor dir>" for the base package and every layer package.
+manifests() {
+	printf '%s\t%s\n' "$MANIFEST" "$VENDOR"
+	local m
+	for m in "$REPO"/claude-*/.claude/skills.d/*.tsv; do
+		[[ -f $m ]] || continue
+		printf '%s\t%s\n' "$m" "$(dirname "$(dirname "$m")")/skills"
+	done
+}
+
+# Print every trigger file: base, then layers.
+trigger_files() {
+	printf '%s\n' "$TRIGGERS"
+	local t
+	for t in "$REPO"/claude-*/.claude/triggers.d/*.tsv; do
+		[[ -f $t ]] && printf '%s\n' "$t"
+	done
+}
+
+# Every vendor dir (base + layers), for the own-skills check.
+vendor_dirs() { manifests | cut -f2 | sort -u; }
+
 # ---------------------------------------------------------------- sync
 
 vendor_one() {
-	local name=$1 repo=$2 path=$3 sha=$4 exclude=$5
+	local name=$1 repo=$2 path=$3 sha=$4 exclude=$5 vendor=$6
 	[[ $name =~ ^[A-Za-z0-9._-]+$ ]] || die "bad skill name: $name"
 	[[ $sha =~ ^[0-9a-f]{40}$ ]] || die "$name: sha must be 40 hex chars"
-	local dest=$VENDOR/$name stamp="$repo@$sha:$path"
+	local dest=$vendor/$name stamp="$repo@$sha:$path"
 
 	if [[ -f $dest/.source && $(<"$dest/.source") == "$stamp" ]]; then
 		printf '  = %s\n' "$name"
@@ -68,11 +95,15 @@ vendor_one() {
 }
 
 sync_skills() {
-	echo "==> Vendoring skills from skills.tsv"
+	echo "==> Vendoring skills from skills.tsv and layer skills.d/*.tsv"
 	CACHE=$(mktemp -d)
-	while IFS=$'\t' read -r name repo path sha exclude; do
-		vendor_one "$name" "$repo" "$path" "$sha" "${exclude:--}"
-	done < <(rows "$MANIFEST")
+	local manifest vendor name repo path sha exclude
+	while IFS=$'\t' read -r manifest vendor; do
+		mkdir -p -- "$vendor"
+		while IFS=$'\t' read -r name repo path sha exclude; do
+			vendor_one "$name" "$repo" "$path" "$sha" "${exclude:--}" "$vendor"
+		done < <(rows "$manifest")
+	done < <(manifests)
 	rm -rf -- "$CACHE"
 }
 
@@ -145,26 +176,31 @@ cmd_check() {
 		ko "$CLAUDE_HOME/settings.json is not the dotfiles link (run: claude-skills sync)"
 	fi
 
-	echo "==> Vendored skills (skills.tsv)"
-	local name repo path sha exclude live
-	while IFS=$'\t' read -r name repo path sha exclude; do
-		live=$CLAUDE_HOME/skills/$name
-		if [[ $(readlink -f "$live/SKILL.md") != "$VENDOR/$name/SKILL.md" ]]; then
-			ko "$name: not stowed into ~/.claude/skills"
-		elif [[ ! -f $VENDOR/$name/.source || $(<"$VENDOR/$name/.source") != "$repo@$sha:$path" ]]; then
-			ko "$name: vendored copy differs from pinned sha (run: claude-skills sync)"
-		else
-			check_skill_dir "$live" "$name"
-		fi
-	done < <(rows "$MANIFEST")
+	echo "==> Vendored skills (skills.tsv + layer skills.d/*.tsv)"
+	local manifest vendor name repo path sha exclude live
+	while IFS=$'\t' read -r manifest vendor; do
+		while IFS=$'\t' read -r name repo path sha exclude; do
+			live=$CLAUDE_HOME/skills/$name
+			if [[ $(readlink -f "$live/SKILL.md") != "$vendor/$name/SKILL.md" ]]; then
+				ko "$name: not stowed into ~/.claude/skills"
+			elif [[ ! -f $vendor/$name/.source || $(<"$vendor/$name/.source") != "$repo@$sha:$path" ]]; then
+				ko "$name: vendored copy differs from pinned sha (run: claude-skills sync)"
+			else
+				check_skill_dir "$live" "$name"
+			fi
+		done < <(rows "$manifest")
+	done < <(manifests)
 
-	echo "==> Own skills (in dotfiles, not in skills.tsv)"
-	local d
-	for d in "$VENDOR"/*/; do
-		d=${d%/}
-		[[ -f $d/.source ]] && continue
-		check_skill_dir "$d" "$(basename "$d")"
-	done
+	echo "==> Own skills (in dotfiles, not in a manifest)"
+	local d v
+	while read -r v; do
+		for d in "$v"/*/; do
+			[[ -d $d ]] || continue
+			d=${d%/}
+			[[ -f $d/.source ]] && continue
+			check_skill_dir "$d" "$(basename "$d")"
+		done
+	done < <(vendor_dirs)
 
 	echo "==> Plugins"
 	local installed id
@@ -177,6 +213,7 @@ cmd_check() {
 	local hook
 	while read -r hook; do
 		local f=${hook#bash }
+		f=${f%% *}
 		f=${f/#\~/$HOME}
 		if [[ -f $f ]]; then ok "hook file exists: $hook"; else ko "hook file missing: $hook"; fi
 	done < <(jq -r '.hooks // {} | .[][] | .hooks[] | .command | select(startswith("bash "))' "$SETTINGS")
@@ -220,7 +257,7 @@ test_one() {
 cmd_test() {
 	local results
 	echo "==> Trigger tests (${TEST_JOBS} parallel, ${TEST_TIMEOUT}s timeout each)"
-	results=$(rows "$TRIGGERS" | while IFS=$'\t' read -r s p; do printf '%s\0%s\0' "$s" "$p"; done |
+	results=$(trigger_files | while read -r t; do rows "$t"; done | while IFS=$'\t' read -r s p; do printf '%s\0%s\0' "$s" "$p"; done |
 		xargs -0 -n 2 -P "$TEST_JOBS" "$self" _test_one)
 	printf 'RESULT\tEXPECTED\tLOADED\n%s\n' "$results" | column -t -s $'\t'
 	local fails

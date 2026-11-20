@@ -6,7 +6,7 @@
 #        Arch     pacman (packages/arch.txt), then paru (packages/aur.txt)
 #        NixOS    nothing; import nix/packages.nix from your system config
 #        FreeBSD  pkg (packages/freebsd.txt)
-#   2. Symlink each package into $HOME with stow.
+#   2. Symlink each package (base + layers) into $HOME: scripts/link.sh.
 #   3. Point git at this platform's commit-signing config.
 #   4. macOS only: Raycast preferences, Spotlight shortcuts.
 #
@@ -18,15 +18,6 @@
 set -euo pipefail
 
 cd "$(dirname "$0")"
-
-# Stow packages linked on every platform.
-PACKAGES=(
-	agy bottom btop claude codex fzf gh ghostty git lsd ncspot nvim
-	obsidian opencode rmpc tmux w3m weather yazi zsh
-)
-
-# macOS-only window manager and keyboard remapper.
-DARWIN_PACKAGES=(aerospace karabiner)
 
 detect_os() {
 	case "$(uname -s)" in
@@ -128,20 +119,6 @@ install_freebsd() {
 	as_root pkg install "${yes[@]}" "${PKGS[@]}"
 }
 
-link() {
-	local pkg
-	for pkg in "$@"; do
-		[ -d "$pkg" ] || continue
-		# Karabiner ignores changes to a symlinked karabiner.json; it needs the
-		# whole ~/.config/karabiner directory linked, so let stow fold it.
-		if [ "$pkg" = karabiner ]; then
-			stow -R -t "$HOME" "$pkg"
-		else
-			stow -R --no-folding -t "$HOME" "$pkg"
-		fi
-	done
-}
-
 macos_settings() {
 	# Raycast rewrites its plist through cfprefsd, which replaces a symlink with
 	# a regular file, so import the settings instead of stowing them.
@@ -174,8 +151,7 @@ fi
 "install_$OS"
 
 echo "==> Linking configs"
-link "${PACKAGES[@]}"
-[ "$OS" = darwin ] && link "${DARWIN_PACKAGES[@]}"
+./scripts/link.sh
 
 # .gitconfig includes ~/.config/git/os.gitconfig; point it at this platform's
 # signing fragment in git/.config/git/os/.

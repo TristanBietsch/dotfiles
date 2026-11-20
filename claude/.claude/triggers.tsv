@@ -13,4 +13,3 @@ systematic-debugging	The API returns HTTP 500 intermittently in production. Help
 brainstorming	I want to build a new team notifications feature. Let's brainstorm the design before coding.
 algorithmic-art	Create generative algorithmic art with p5.js using flow fields.
 mcp-builder	Build an MCP server that wraps our internal weather REST API.
-solana-dev	Write an Anchor program for a simple token vault on Solana.

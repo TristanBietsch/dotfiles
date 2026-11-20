@@ -85,12 +85,6 @@ Thumbs.db
 # Karabiner auto backups (written into the linked config dir)
 karabiner/.config/karabiner/automatic_backups/
 
-# Work-specific Claude skills: kept local, never pushed (public repo)
-claude/.claude/skills/ob/
-claude/.claude/skills/pres/
-claude/.claude/skills/prmsg/
-claude/.claude/skills/rmsg/
-
 # ---- Sensitive: never commit (defense in depth) ----
 # Private keys / certs / keystores
 *.key
@@ -144,9 +138,9 @@ secrets.*
 *.tfstate.*
 .vault-token
 
-# Solana keypairs
+# Wallet keypairs
 *keypair*.json
-.config/solana/id.json
+.config/*/id.json
 
 # Shell history
 .*_history
@@ -156,3 +150,27 @@ secrets.*
 # Timestamped backups (e.g. .zshrc.bak.123)
 *.bak.*
 !theme/themes/**/colors.env
+
+# Claude Code state: never tracked (also enforced by scripts/check.sh)
+**/.claude/projects/
+**/.claude/memory/
+**/.claude/state/
+**/.claude/sessions/
+**/.claude/todos/
+**/.claude/shell-snapshots/
+**/.claude/plugins/
+**/.claude/file-history/
+**/.claude/paste-cache/
+**/.claude/statsig/
+**/.claude/ide/
+**/.claude/debug/
+**/.claude/session-env/
+.claude.json
+.claude.json.*
+.credentials.json
+history.jsonl
+terminal_title
+CLAUDE.layers.md
+mcp*.json
+.mcp*.json
+*.bak*

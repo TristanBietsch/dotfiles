@@ -1,10 +1,6 @@
 # Vendored Claude Code skills, pinned. Edit a row, run `claude-skills sync`, review the diff, commit.
 # Columns (tab-separated): name repo path sha exclude(comma list of paths to drop, or -)
 # Review notes for each source: skills/INSTALLED.md
-solana-dev	solana-foundation/solana-dev-skill	skills/solana-dev	a265d11fcc1b0cfbbbe9dfe9deda57fd3c210eee	-
-svm	helius-labs/core-ai	helius-skills/svm	8deb43816578f69f7bdf9f687fd83e23a258bc62	install.sh
-squads	sendaifun/skills	skills/squads	06b36b8b420e705ffd57b29e463f01093959d8d4	-
-surfpool	sendaifun/skills	skills/surfpool	06b36b8b420e705ffd57b29e463f01093959d8d4	-
 zz-code-recon	sendaifun/skills	skills/zz-code-recon	06b36b8b420e705ffd57b29e463f01093959d8d4	-
 vulnhunter	sendaifun/skills	skills/vulnhunter	06b36b8b420e705ffd57b29e463f01093959d8d4	-
 write-a-prd	mattpocock/skills	write-a-prd	a77fa6e7a6726f687aa36455b27ed8b7d09afdff	-

@@ -15,6 +15,39 @@
             "command": "bash ~/.claude/skills/terminal-title/hooks/set-title-hook.sh"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/layer.sh msg-marker",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "mcp__plugin_slack_slack__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/layer.sh slack-channel-guard deny",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/layer.sh msg-marker",
+            "timeout": 5
+          }
+        ]
       }
     ]
   },
@@ -39,7 +72,8 @@
     "example-skills@anthropic-agent-skills": true,
     "terrashark@terrashark": true,
     "task-observer@one-skill-to-rule-them-all": true,
-    "overkill@overkill-marketplace": true
+    "overkill@overkill-marketplace": true,
+    "slack@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -139,7 +173,7 @@
       "**Primary use of Claude Code**: software development",
       "**Trusted repo**: No git repository detected at the working directory (/Users/tristan, 0 tracked files, no remotes) — no repo to scope trust to currently",
       "**Org-specific CLIs**: None configured",
-      "Routine Solana/mainnet work (per ~/.claude/CLAUDE.md): default to localnet/devnet; never sign, send, or deploy to mainnet without explicit per-action approval; never handle private keys/seed phrases/keypair files"
+      "Routine on-chain work (per ~/.claude/CLAUDE.md and its layer rules): default to local or test networks; never sign, send, or deploy to a production network without explicit per-action approval; never handle private keys/seed phrases/keypair files"
     ]
   },
   "voiceEnabled": false

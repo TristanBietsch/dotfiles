@@ -78,12 +78,10 @@ y() {
 	rm -f -- "$tmp"
 }
 
-export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
 
 
 # Added by Antigravity CLI installer
@@ -102,3 +100,7 @@ export PATH="$HOME/.grok/bin:$PATH"
 fpath=(~/.grok/completions/zsh $fpath)
 autoload -Uz compinit && compinit -C
 # <<< grok installer <<<
+
+# Layer packages (zsh-<layer>/) drop snippets here.
+for f in "$HOME"/.zshrc.d/*.zsh(N); do source "$f"; done
+unset f

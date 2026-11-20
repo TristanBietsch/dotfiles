@@ -81,6 +81,7 @@ Claude Code picks a skill on its own by matching the prompt against each skill's
 | `claude/.claude/settings.json` | Plugins (`enabledPlugins` + `extraKnownMarketplaces`) and hooks |
 | `claude/.claude/triggers.tsv` | Prompt and expected skill, for trigger tests |
 | `claude/.claude/skills/INSTALLED.md` | Security review notes per source |
+| `claude-<layer>/.claude/skills.d/*.tsv` | Layer skills, vendored into `claude-<layer>/.claude/skills/` (see layers) |
 
 ```sh
 claude-skills sync    # vendor pinned skills, install enabled plugins, re-link settings.json
@@ -91,6 +92,28 @@ claude-skills test    # headless trigger tests (Skill tool only, no MCP); exit 1
 To add or update a skill, edit its row in `skills.tsv`, run `claude-skills sync`, review `git diff`, then commit. For a plugin, add it to `settings.json`, then sync.
 
 `claude plugin install` and `/plugin` replace the `settings.json` link with a plain file. `claude-skills check` flags that, and `sync` re-links it.
+
+## layers
+
+A layer is an optional add-on package named `<base>-<layer>`, e.g. `claude-solana/` or `zsh-solana/`. `scripts/link.sh` finds and stows layers automatically. A downstream repo (a private copy of this one) adds its own layers by adding directories, and pulls this repo with `git merge`.
+
+| Hook point | Base file | A layer adds |
+|---|---|---|
+| Claude rules | `claude/.claude/CLAUDE.md` imports `~/.claude/CLAUDE.layers.md` (generated) | `claude-<layer>/.claude/CLAUDE.<layer>.md` |
+| Claude skills | `claude/.claude/skills.tsv`, `triggers.tsv` | `claude-<layer>/.claude/skills.d/*.tsv`, `triggers.d/*.tsv` |
+| Claude hooks | `settings.json` calls `~/.claude/hooks/layer.sh <name> [noop\|deny]` | `claude-<layer>/.claude/hooks.d/<name>.sh` |
+| zsh | `.zshrc` sources `~/.zshrc.d/*.zsh` | `zsh-<layer>/.zshrc.d/*.zsh` |
+
+Without a layer providing a hook, `layer.sh` falls back: `noop` passes, `deny` blocks the tool call.
+
+## checks
+
+```sh
+make check   # shellcheck, JSON, tests/, no Claude state, trufflehog, public leak check
+make push    # git push (pre-push runs check), then sync the downstream copy if present
+```
+
+`scripts/link.sh` sets `core.hooksPath=.githooks`: `pre-commit` blocks Claude Code state (transcripts, memory, `~/.claude.json`, MCP config) and secrets; `pre-push` runs `make check`. CI runs the same check on every push.
 
 ## not stowed
 
