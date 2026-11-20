@@ -35,6 +35,10 @@ expect deny "$(run "$h" '{}' garbage deny)" "non-JSON hook output blocks"
 printf '#!/usr/bin/env bash\ncat >/dev/null\n' >"$d/silent.sh"
 expect "" "$(run "$h" '{}' silent deny)" "hook exit 0 + no output passes"
 
+printf '#!/usr/bin/env bash\nsleep 30\n' >"$d/hang.sh"
+got=$(printf '{}' | HOME=$h LAYER_HOOK_TIMEOUT=1 bash "$LAYER" hang deny | decision)
+expect deny "$got" "hung hook killed by watchdog, blocks"
+
 nojq=$tmp/nojq; mkdir -p "$nojq"
 ln -s "$(command -v cat)" "$nojq/cat"
 got=$(printf '{}' | HOME=$h PATH=$nojq /bin/bash "$LAYER" silent deny)
