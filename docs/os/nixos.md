@@ -62,7 +62,7 @@ programs._1password-gui = {
 | `mactex-no-gui` | not included; use `texliveFull` if needed |
 | `rust` | `rustc` + `cargo` |
 | `sevenzip` | `_7zz` |
-| `aerospace`, `karabiner-elements`, `caffeine`, `shortcat` | macOS only; not replaced |
+| `aerospace`, `karabiner-elements`, `caffeine`, `shortcat`, `keyty` | macOS only; not replaced |
 
 `nix/packages.nix` was checked by evaluating it against `nixos-unstable`.
 

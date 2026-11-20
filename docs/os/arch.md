@@ -38,7 +38,7 @@ Commits are signed with 1Password's SSH agent, as on macOS.
 |---|---|
 | `obsidian-cli` (yakitrak tap) | none; build from source |
 | `mactex-no-gui` | not installed; use `texlive-meta` if needed |
-| `aerospace`, `karabiner-elements`, `caffeine`, `shortcat` | macOS only; not replaced |
+| `aerospace`, `karabiner-elements`, `caffeine`, `shortcat`, `keyty` | macOS only; not replaced |
 | `marp-cli`, `posting`, `claude-code`, `codex` | AUR (`packages/aur.txt`) |
 
 ## Configs that stay macOS-flavored
