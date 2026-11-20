@@ -4,3 +4,4 @@
 # Format: <package>/<path relative to $HOME>; also ignored by that package's
 # .stow-local-ignore.
 agy/.gemini/antigravity-cli/settings.json
+git/.gitconfig

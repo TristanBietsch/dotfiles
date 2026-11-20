@@ -123,7 +123,7 @@ make push    # git push (pre-push runs check), then sync the downstream copy if 
 2. Adopt live files an app rewrote in place, if listed in `scripts/drift-allow.txt`: scan, commit, push, re-link. Other replaced links only get a notification.
 3. If a downstream copy exists (`~/dotfiles-work`), run its `work/sync.sh`: merge this repo, check, push, export.
 
-Per-machine files (`scripts/per-machine.txt`, e.g. agy settings): the repo copy seeds a new machine once; after that each machine keeps its own file, never linked or synced.
+Per-machine files (`scripts/per-machine.txt`: agy settings, `~/.gitconfig`): the repo copy seeds a new machine once; after that each machine keeps its own file, never linked or synced.
 
 Merges: `.gitattributes` unions append-only lists (`skills.tsv`, `Brewfile`, `packages/*.txt`) and 3-way merges `settings.json` by key (`scripts/jq-merge3`). Any other conflict aborts cleanly, leaves a `conflict/<repo>/<time>` bookmark branch and sends a notification; `dotsync resolve` lists them.
 

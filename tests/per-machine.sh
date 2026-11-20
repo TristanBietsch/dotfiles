@@ -21,4 +21,6 @@ printf '{"linked":1}\n' >"$tmp/linked.json"
 rm "$tmp/$f" && ln -s "$tmp/linked.json" "$tmp/$f"
 run
 check "old link replaced by a real copy of its content" "[[ ! -L $tmp/$f ]] && grep -q linked $tmp/$f"
+check "gitconfig: seeded as a real file" "[[ -f $tmp/.gitconfig && ! -L $tmp/.gitconfig ]]"
+check "gitconfig: os fragments still linked" "[[ -L $tmp/.config/git/os/darwin.gitconfig ]]"
 exit "$fail"
