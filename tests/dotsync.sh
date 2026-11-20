@@ -143,6 +143,19 @@ mkdir -p "$tmp/W/layer" && printf 'a\n' >"$tmp/W/layer/notes.md" && git -C "$tmp
 DOTSYNC_YES=y ds A A import-org >/dev/null 2>&1
 check "import-org: imports the plain layer file only, never work/" "grep -q b $tmp/W/layer/notes.md && ! grep -q 'rm -rf' $tmp/W/work/sync.sh"
 
+git -C "$tmp/O" rev-parse HEAD >"$tmp/state-A/last-export-org"
+mkdir -p "$tmp/O/layer/nvim" && printf 'os.execute("x")\n' >"$tmp/O/layer/nvim/h.lua" && git -C "$tmp/O" add -A && git -C "$tmp/O" commit -qm lua && git -C "$tmp/O" push -q origin master
+DOTSYNC_YES=y ds A A import-org >/dev/null 2>&1
+check "import-org: refuses config that can run code (.lua)" "[[ \$? != 0 ]] && [[ ! -e $tmp/W/layer/nvim/h.lua ]]"
+git -C "$tmp/O" rev-parse HEAD >"$tmp/state-A/last-export-org"
+ln -s /etc/passwd "$tmp/O/layer/link.md" && git -C "$tmp/O" add -A && git -C "$tmp/O" commit -qm link && git -C "$tmp/O" push -q origin master
+DOTSYNC_YES=y ds A A import-org >/dev/null 2>&1
+check "import-org: refuses a symlink" "[[ \$? != 0 ]] && [[ ! -e $tmp/W/layer/link.md ]]"
+git -C "$tmp/O" rev-parse HEAD >"$tmp/state-A/last-export-org"
+printf 'ok\033[8mhidden\033[0m\n' >>"$tmp/O/layer/notes.md" && git -C "$tmp/O" commit -qam esc && git -C "$tmp/O" push -q origin master
+DOTSYNC_YES=y ds A A import-org >/dev/null 2>&1
+check "import-org: refuses terminal control characters" "[[ \$? != 0 ]] && ! grep -q hidden $tmp/W/layer/notes.md"
+
 # 9 identity: env leaked from an outer git hook must not override user.email
 git -C "$tmp/A" config user.email right@example.com
 printf 'id\n' >>"$tmp/A/other.txt" && git -C "$tmp/A" commit -qam id

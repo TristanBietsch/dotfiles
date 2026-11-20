@@ -402,9 +402,10 @@ cmd_import_org() {
 	echo "Edited in the org copy:"
 	printf '  %s\n' "$changed"
 	((${#inc[@]})) || die "no importable layer paths"
-	if risky=$(g "$WORK" diff --name-only "$last" "$head" -- "${inc[@]}" |
-		grep -E '(^|/)(hooks\.d|scripts|bin)/|\.(sh|bash|zsh|py|js|mjs|cjs|ts|rb|pl)$'); then
-		die "org edits touch executable paths; not importing. Review by hand: $(tr '\n' ' ' <<<"$risky")"
+	# Allowlist: only inert text (.md, .txt). Config like *.lua, rc files or
+	# settings.json can run commands, so it is never imported.
+	if risky=$(g "$WORK" diff --name-only "$last" "$head" -- "${inc[@]}" | grep -v -E '\.(md|txt)$'); then
+		die "org edits touch non-text files; not importing. Review by hand: $(tr '\n' ' ' <<<"$risky")"
 	fi
 	patch=$(mktemp)
 	g "$WORK" diff --binary "$last" "$head" -- "${inc[@]}" >"$patch"
@@ -412,9 +413,15 @@ cmd_import_org() {
 		echo "No importable layer edits. Base-file edits: redo them in $PUBLIC. The next export overwrites the org copy."
 		return 0
 	fi
-	grep -q -E '^(new file mode|new mode|old mode) 100755' "$patch" && die "org edits set an executable bit; not importing"
+	# Regular 100644 files only: no exec bit, symlink, submodule, rename or copy.
+	if grep -E '^(new file mode|deleted file mode|new mode|old mode) ' "$patch" | grep -q -v -E ' 100644$' ||
+		grep -q -E '^(rename|copy) (from|to) |^similarity index |^GIT binary patch' "$patch"; then
+		die "org edits change file modes, renames, symlinks or binaries; not importing"
+	fi
+	# No control characters: they could hide content from the review below.
+	LC_ALL=C grep -q '[[:cntrl:]]' <(tr -d '\t\n' <"$patch") && die "org edits contain control characters; not importing"
 	echo "---- full patch ----"
-	cat "$patch"
+	cat -v "$patch"
 	echo "--------------------"
 	ask "Import exactly this patch into $WORK?" || die "not imported"
 	g "$WORK" apply --3way "$patch" || die "patch does not apply"
