@@ -151,6 +151,11 @@ git -C "$tmp/O" rev-parse HEAD >"$tmp/state-A/last-export-org"
 ln -s /etc/passwd "$tmp/O/layer/link.md" && git -C "$tmp/O" add -A && git -C "$tmp/O" commit -qm link && git -C "$tmp/O" push -q origin master
 DOTSYNC_YES=y ds A A import-org >/dev/null 2>&1
 check "import-org: refuses a symlink" "[[ \$? != 0 ]] && [[ ! -e $tmp/W/layer/link.md ]]"
+rm "$tmp/O/layer/link.md" && ln -s /etc/passwd "$tmp/O/layer/old.md" && git -C "$tmp/O" add -A && git -C "$tmp/O" commit -qm seedlink && git -C "$tmp/O" push -q origin master
+git -C "$tmp/O" rev-parse HEAD >"$tmp/state-A/last-export-org"
+ln -sfn /etc/hosts "$tmp/O/layer/old.md" && git -C "$tmp/O" add -A && git -C "$tmp/O" commit -qm retarget && git -C "$tmp/O" push -q origin master
+DOTSYNC_YES=y ds A A import-org >/dev/null 2>&1
+check "import-org: refuses retargeting an existing symlink" "[[ \$? != 0 ]] && [[ ! -e $tmp/W/layer/old.md ]]"
 git -C "$tmp/O" rev-parse HEAD >"$tmp/state-A/last-export-org"
 printf 'ok\033[8mhidden\033[0m\n' >>"$tmp/O/layer/notes.md" && git -C "$tmp/O" commit -qam esc && git -C "$tmp/O" push -q origin master
 DOTSYNC_YES=y ds A A import-org >/dev/null 2>&1

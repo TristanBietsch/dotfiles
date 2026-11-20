@@ -414,7 +414,10 @@ cmd_import_org() {
 		return 0
 	fi
 	# Regular 100644 files only: no exec bit, symlink, submodule, rename or copy.
-	if grep -E '^(new file mode|deleted file mode|new mode|old mode) ' "$patch" | grep -q -v -E ' 100644$' ||
+	# Modes from git itself, both sides of every path (catches edits to an
+	# existing symlink, which a patch shows only on its index line).
+	if g "$WORK" diff --raw --no-renames "$last" "$head" -- "${inc[@]}" |
+		awk '{ m1 = substr($1, 2); if ((m1 != "100644" && m1 != "000000") || ($2 != "100644" && $2 != "000000")) bad = 1 } END { exit !bad }' ||
 		grep -q -E '^(rename|copy) (from|to) |^similarity index |^GIT binary patch' "$patch"; then
 		die "org edits change file modes, renames, symlinks or binaries; not importing"
 	fi
