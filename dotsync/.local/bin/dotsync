@@ -27,6 +27,13 @@
 #      DOTSYNC_YES (y|n: answer prompts, for tests) DOTSYNC_SKIP_TRUFFLEHOG (tests only)
 set -uo pipefail
 
+# Launched from git hooks, dotsync inherits the outer commit's GIT_AUTHOR_*,
+# GIT_COMMITTER_*, GIT_DIR, GIT_INDEX_FILE etc. They would override identity
+# and repo selection in every nested git call, so drop them.
+unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_AUTHOR_DATE GIT_COMMITTER_NAME \
+	GIT_COMMITTER_EMAIL GIT_COMMITTER_DATE GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE \
+	GIT_PREFIX GIT_EDITOR GIT_REFLOG_ACTION GIT_EXEC_PATH
+
 PUBLIC=${DOTSYNC_PUBLIC:-$HOME/dotfiles}
 WORK=${DOTSYNC_WORK:-$HOME/dotfiles-work}
 STATE=${DOTSYNC_STATE:-$HOME/.local/state/dotsync}
@@ -365,8 +372,11 @@ cmd_route() {
 		die "patch may contain a secret; refusing"
 	fi
 	[[ -z $(g "$PUBLIC" status --porcelain) ]] || die "$PUBLIC has uncommitted changes"
-	g "$WORK" show --stat --format='%h %s' "$c" -- . "${excl[@]}"
-	ask "Apply to $PUBLIC and push?" || die "not routed"
+	g "$WORK" log -1 --format='%h %s' "$c"
+	echo "---- full patch ----"
+	cat "$patch"
+	echo "--------------------"
+	ask "Apply exactly this patch to $PUBLIC and push?" || die "not routed"
 	subj=$(g "$WORK" log -1 --format=%s "$c")
 	g "$PUBLIC" apply --3way "$patch" || die "patch does not apply to $PUBLIC; nothing changed downstream"
 	g "$PUBLIC" commit -q -m "$subj" -m "Routed from dotfiles-work@$(g "$WORK" rev-parse --short "$c")." || die "commit failed in $PUBLIC"
@@ -380,22 +390,33 @@ cmd_import_org() {
 	have_work || die "no downstream repo at $WORK"
 	g "$WORK" remote get-url org >/dev/null 2>&1 || die "downstream has no 'org' remote"
 	[[ -z $(g "$WORK" status --porcelain) ]] || die "$WORK has uncommitted changes"
-	local last head changed inc=() p patch
+	local last head changed inc=() p patch risky
 	last=$(cat "$STATE/last-export-org" 2>/dev/null) || die "no record of the last export"
 	g "$WORK" fetch -q org || die "fetch org failed"
 	head=$(g "$WORK" rev-parse org/master)
 	[[ $head == "$last" ]] && { echo "org copy has no direct edits"; return 0; }
 	changed=$(g "$WORK" diff --name-only "$last" "$head")
-	while IFS= read -r p; do inc+=("$p"); done < <(layer_paths)
+	# Anyone with write access to the org copy can edit it, so never import
+	# work/ (the sync scripts and deny lists) or anything that runs.
+	while IFS= read -r p; do [[ $p == work/ ]] || inc+=("$p"); done < <(layer_paths)
 	echo "Edited in the org copy:"
 	printf '  %s\n' "$changed"
+	((${#inc[@]})) || die "no importable layer paths"
+	if risky=$(g "$WORK" diff --name-only "$last" "$head" -- "${inc[@]}" |
+		grep -E '(^|/)(hooks\.d|scripts|bin)/|\.(sh|bash|zsh|py|js|mjs|cjs|ts|rb|pl)$'); then
+		die "org edits touch executable paths; not importing. Review by hand: $(tr '\n' ' ' <<<"$risky")"
+	fi
 	patch=$(mktemp)
 	g "$WORK" diff --binary "$last" "$head" -- "${inc[@]}" >"$patch"
 	if [[ ! -s $patch ]]; then
-		echo "No layer-path edits to import. Other paths are base files: redo them in $PUBLIC. The next export overwrites them."
+		echo "No importable layer edits. Base-file edits: redo them in $PUBLIC. The next export overwrites the org copy."
 		return 0
 	fi
-	ask "Import the layer-path edits into $WORK?" || die "not imported"
+	grep -q -E '^(new file mode|new mode|old mode) 100755' "$patch" && die "org edits set an executable bit; not importing"
+	echo "---- full patch ----"
+	cat "$patch"
+	echo "--------------------"
+	ask "Import exactly this patch into $WORK?" || die "not imported"
 	g "$WORK" apply --3way "$patch" || die "patch does not apply"
 	g "$WORK" commit -q -m "import edits made in the org copy" -m "org@$(g "$WORK" rev-parse --short "$head")" || die "commit failed"
 	rm -f "$patch"

