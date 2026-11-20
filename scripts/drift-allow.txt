@@ -1,5 +1,6 @@
 # Live files apps rewrite in place (replacing the stow link with a real file).
 # dotsync adopts these automatically: copy into the repo, scan, commit, push, relink.
 # Format: <package>/<path relative to $HOME>
-agy/.gemini/antigravity-cli/settings.json
+# agy settings: off until per-machine differences are settled (this Mac: toolPermission
+# always-proceed vs the repo allowlist); dotsync reports it instead of adopting.
 claude/.claude/settings.json
