@@ -8,6 +8,10 @@ return {
 		local alpha = require("alpha")
 		local dashboard = require("alpha.themes.dashboard")
 
+		-- A layer package can replace the header with lua/local/header.lua
+		-- (a list of lines); otherwise the default art below shows.
+		local has_layer_header, layer_header = pcall(require, "local.header")
+
 		dashboard.section.header.val = {
 			[[    			┌¬._                                                                               ]],
 			[[    		   ç^_≈²                                                                               ]],
@@ -68,6 +72,9 @@ return {
 			[[   MM `Mb.     ,'       ,P   `MM.`Mb.     ,'       M     YMM    MM    MM   `MM.    A'     VML    ]],
 			[[ .JMML. `"bmmmd'      .MM:.  .:MMa.`"bmmmd'      .JML.    YM  .JMML..JMML.   MMb..AMA.   .AMMA.  ]],
 		}
+		if has_layer_header and type(layer_header) == "table" then
+			dashboard.section.header.val = layer_header
+		end
 
 		alpha.setup(dashboard.opts)
 	end,
