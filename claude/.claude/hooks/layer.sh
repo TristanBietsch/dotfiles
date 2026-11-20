@@ -65,7 +65,7 @@ pid=$!
 dog=$!
 status=0
 wait "$pid" || status=$?
-kill "$dog" 2>/dev/null || true
+{ kill "$dog" && wait "$dog"; } 2>/dev/null || true
 out=$(<"$outf")
 cat "$errf" >&2
 rm -f "$outf" "$errf"
