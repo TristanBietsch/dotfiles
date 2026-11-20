@@ -4,7 +4,7 @@
 #   scripts/link.sh
 #
 # Base packages are listed below. A layer package is a top-level dir named
-# <base>-<layer> (e.g. claude-solana, zsh-solana); it is found automatically,
+# <base>-<layer> (e.g. claude-foo, zsh-foo); it is found automatically,
 # so a downstream repo adds a layer just by adding the dir.
 #
 # Also:

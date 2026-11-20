@@ -95,7 +95,7 @@ To add or update a skill, edit its row in `skills.tsv`, run `claude-skills sync`
 
 ## layers
 
-A layer is an optional add-on package named `<base>-<layer>`, e.g. `claude-solana/` or `zsh-solana/`. `scripts/link.sh` finds and stows layers automatically. A downstream repo (a private copy of this one) adds its own layers by adding directories, and pulls this repo with `git merge`.
+A layer is an optional add-on package named `<base>-<layer>`, e.g. `claude-foo/` or `zsh-foo/`. `scripts/link.sh` finds and stows layers automatically. A downstream repo (a private copy of this one) adds its own layers by adding directories, and pulls this repo with `git merge`.
 
 | Hook point | Base file | A layer adds |
 |---|---|---|
