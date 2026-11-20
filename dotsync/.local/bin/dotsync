@@ -240,6 +240,7 @@ report_unlisted_drift() {
 		[[ -f $live && ! -L $live ]] || continue
 		case $(cd "$(dirname "$live")" && pwd -P) in "$repo"/*) continue ;; esac
 		grep -qxF "$f" "$allow" 2>/dev/null && continue
+		grep -qxF "$f" "$PUBLIC/scripts/per-machine.txt" 2>/dev/null && continue
 		list="$list ~/${f#*/}"
 		n=$((n + 1))
 	done < <(g "$repo" ls-files -- 'claude*' 'agy' 'git' 'zsh*' 'ghostty' 'nvim' 'tmux' 'yazi' 'lsd' 'btop' 'bottom' 'codex' 'opencode' 'fzf' 'gh' 'kitty' 'rmpc' 'ncspot' 'weather' 'dotsync' 2>/dev/null)

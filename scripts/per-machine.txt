@@ -1,0 +1,6 @@
+# Per-machine files: the repo copy only seeds a new machine. link.sh never
+# links them, never overwrites them, and dotsync never syncs or reports them.
+# A machine that still has a link gets it replaced by a real copy (no loss).
+# Format: <package>/<path relative to $HOME>; also ignored by that package's
+# .stow-local-ignore.
+agy/.gemini/antigravity-cli/settings.json

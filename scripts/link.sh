@@ -49,6 +49,24 @@ while IFS= read -r l; do
 done < <(find "$HOME/.claude" "$HOME/.local/bin" "$HOME/.config" "$HOME/.zshrc.d" \
 	-path "$HOME/.claude/projects" -prune -o -type l -print 2>/dev/null)
 
+echo "==> Per-machine files (seed once, never link)"
+while IFS= read -r line; do
+	[[ -z $line || $line == \#* ]] && continue
+	live=$HOME/${line#*/}
+	src=$REPO/$line
+	if [[ -L $live ]]; then
+		# Was stowed before: keep this machine's content as a real file.
+		tmpf=$(mktemp)
+		if cp -L "$live" "$tmpf" 2>/dev/null; then
+			rm -f -- "$live" && mv "$tmpf" "$live" && echo "  ~ ${line#*/} (link replaced by a real copy)"
+		else
+			rm -f "$tmpf"
+		fi
+	elif [[ ! -e $live && -f $src ]]; then
+		mkdir -p "$(dirname "$live")" && cp "$src" "$live" && echo "  + ${line#*/} (seeded)"
+	fi
+done < <(cat scripts/per-machine.txt 2>/dev/null)
+
 echo "==> Linking packages"
 FAILED=()
 for pkg in "${BASE[@]}" "${LAYERS[@]}"; do
