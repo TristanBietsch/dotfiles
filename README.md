@@ -115,6 +115,18 @@ make push    # git push (pre-push runs check), then sync the downstream copy if 
 
 `scripts/link.sh` sets `core.hooksPath=.githooks`: `pre-commit` blocks Claude Code state (transcripts, memory, `~/.claude.json`, MCP config) and secrets; `pre-push` runs `make check`. CI runs the same check on every push.
 
+## sync
+
+`dotsync` (package `dotsync/`, linked to `~/.local/bin/dotsync`) keeps every copy current. A 15-minute timer (`dotsync timer install`; `install.sh` does it) and the `post-commit` hook run `dotsync run`:
+
+1. Pull `origin` with `--rebase --autostash`, then push local commits (`pre-push` runs `make check`).
+2. Adopt live files an app rewrote in place, if listed in `scripts/drift-allow.txt`: scan, commit, push, re-link. Other replaced links only get a notification.
+3. If a downstream copy exists (`~/dotfiles-work`), run its `work/sync.sh`: merge this repo, check, push, export.
+
+Merges: `.gitattributes` unions append-only lists (`skills.tsv`, `Brewfile`, `packages/*.txt`) and 3-way merges `settings.json` by key (`scripts/jq-merge3`). Any other conflict aborts cleanly, leaves a `conflict/<repo>/<time>` bookmark branch and sends a notification; `dotsync resolve` lists them.
+
+dotsync never commits hand edits (it carries them with `--autostash` and reminds you after 24h) and never force-pushes. `dotsync status` shows ahead/behind/dirty for each repo; Claude Code sessions get the same warnings at start.
+
 ## not stowed
 
 - `packages/`, `nix/` — package lists for Arch, FreeBSD and NixOS.

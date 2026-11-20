@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# post-merge / post-rewrite: in the repo $HOME is stowed from, re-link when files
+# were added, removed or renamed, and re-vendor skills when a manifest changed.
+top=$(git rev-parse --show-toplevel)
+stowed=$("$HOME/.local/bin/dotsync" stow-repo 2>/dev/null) || exit 0
+[ "$top" = "$stowed" ] || exit 0
+git rev-parse -q --verify ORIG_HEAD >/dev/null || exit 0
+if [ -n "$(git diff --name-only --diff-filter=ADR ORIG_HEAD HEAD)" ]; then
+	"$top/scripts/link.sh" >/dev/null 2>&1 || true
+fi
+if git diff --name-only ORIG_HEAD HEAD | grep -q -E '(^|/)skills(\.d/[^/]+)?\.tsv$|skills\.d/'; then
+	nohup "$HOME/.local/bin/claude-skills" sync >/dev/null 2>&1 &
+fi
+exit 0

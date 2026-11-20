@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# jq-merge3 — git merge driver: 3-way merge of JSON files (settings.json).
+#
+#   git config merge.jq-merge3.driver "<repo>/scripts/jq-merge3 %O %A %B"
+#   .gitattributes: <path> merge=jq-merge3
+#
+# Objects merge key by key, recursively. A key changed on one side takes that
+# side; changed on both sides to the same value is fine; changed on both sides
+# to different values is a conflict (exit 1, %A untouched, git marks it).
+# Arrays and scalars are leaves. Key order follows ours, then new keys of theirs.
+set -euo pipefail
+base=$1 ours=$2 theirs=$3
+out=$(mktemp)
+trap 'rm -f "$out"' EXIT
+jq -n --indent 2 --slurpfile o "$base" --slurpfile a "$ours" --slurpfile b "$theirs" '
+	def gone: "\u0000MISSING";
+	def get($k): if type == "object" and has($k) then .[$k] else gone end;
+	def obj: type == "object";
+	def m3($o; $a; $b):
+		if $a == $b then $a
+		elif $a == $o then $b
+		elif $b == $o then $a
+		elif ($a | obj) and ($b | obj) and (($o | obj) or $o == gone) then
+			(($a | keys_unsorted) + (($b | keys_unsorted) - ($a | keys_unsorted))) as $keys
+			| reduce $keys[] as $k ({};
+				m3($o | get($k); $a | get($k); $b | get($k)) as $v
+				| if $v == gone then . else .[$k] = $v end)
+		else error("conflict")
+		end;
+	m3($o[0] // {}; $a[0]; $b[0])' >"$out" 2>/dev/null || exit 1
+cat "$out" >"$ours"

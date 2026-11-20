@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# post-commit: hand the new commit to dotsync (pull, push, downstream) in the background.
+[ -n "${DOTSYNC_LOCK_HELD:-}" ] && exit 0 # commit made by dotsync itself
+top=$(git rev-parse --show-toplevel)
+[ -d "$top/.git/rebase-merge" ] || [ -d "$top/.git/rebase-apply" ] && exit 0
+[ -x "$HOME/.local/bin/dotsync" ] || exit 0
+nohup "$HOME/.local/bin/dotsync" run --quiet >/dev/null 2>&1 &
+exit 0

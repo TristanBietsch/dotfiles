@@ -1,0 +1,476 @@
+#!/usr/bin/env bash
+# dotsync — keep dotfiles in sync across machines and repos.
+#
+#   dotsync run [--quiet]        full pipeline (15-min timer, post-commit hook)
+#   dotsync status [--hook]      repo state; --hook prints only problems (Claude SessionStart)
+#   dotsync route <commit>       copy a downstream commit's base changes to the public repo (asks)
+#   dotsync import-org           bring direct edits in the org copy back downstream (asks)
+#   dotsync resolve [--drop <branch>]   list or drop parked conflict branches
+#   dotsync timer install|uninstall     15-minute timer (launchd / systemd --user / cron)
+#   dotsync stow-repo            print the repo $HOME is stowed from
+#
+# Directions:
+#   this machine <-> public remote    pull --rebase --autostash, push (pre-push runs check)
+#   live $HOME -> public              drift adoption, allowlist scripts/drift-allow.txt
+#   public -> downstream -> org       downstream work/sync.sh (merge, check, push, export)
+#   downstream -> public              `dotsync route`, asks, scans first
+#   org -> downstream                 `dotsync import-org`, asks, layer paths only
+#   org -> public                     never
+#
+# Never auto-commits hand edits (they ride along via --autostash; a reminder
+# fires after DOTSYNC_DIRTY_HOURS). Never force-pushes. Conflicts abort cleanly,
+# get a conflict/<repo>/<time> bookmark branch, and a notification.
+#
+# Env: DOTSYNC_PUBLIC (~/dotfiles) DOTSYNC_WORK (~/dotfiles-work)
+#      DOTSYNC_STATE (~/.local/state/dotsync) DOTSYNC_HOME ($HOME, for drift)
+#      DOTSYNC_DIRTY_HOURS (24) DOTSYNC_NOTIFY (command; default desktop notification)
+#      DOTSYNC_YES (y|n: answer prompts, for tests) DOTSYNC_SKIP_TRUFFLEHOG (tests only)
+set -uo pipefail
+
+PUBLIC=${DOTSYNC_PUBLIC:-$HOME/dotfiles}
+WORK=${DOTSYNC_WORK:-$HOME/dotfiles-work}
+STATE=${DOTSYNC_STATE:-$HOME/.local/state/dotsync}
+H=${DOTSYNC_HOME:-$HOME}
+DIRTY_HOURS=${DOTSYNC_DIRTY_HOURS:-24}
+LOCK=$STATE/lock
+LOG=$STATE/log
+QUIET=0
+ERRORS=0
+RELINK=""
+mkdir -p "$STATE"
+
+say() { ((QUIET)) || printf '%s\n' "$*"; }
+log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >>"$LOG"; say "$*"; }
+die() { echo "dotsync: $*" >&2; exit 1; }
+notify() {
+	log "NOTIFY: $*"
+	if [[ -n ${DOTSYNC_NOTIFY:-} ]]; then
+		"$DOTSYNC_NOTIFY" "$*" || true
+	elif [[ $(uname -s) == Darwin ]]; then
+		osascript -e "display notification \"${*//\"/}\" with title \"dotsync\"" >/dev/null 2>&1 || true
+	elif command -v notify-send >/dev/null; then
+		notify-send dotsync "$*" || true
+	fi
+}
+fail() {
+	ERRORS=$((ERRORS + 1))
+	printf '%s %s\n' "$(date '+%F %T')" "$*" >"$STATE/last-error"
+	notify "$*"
+}
+g() { git -C "$1" "${@:2}"; }
+have_work() { [[ -d $WORK/.git && -f $WORK/work/sync.sh ]]; }
+stow_repo() { if have_work; then echo "$WORK"; else echo "$PUBLIC"; fi; }
+ask() {
+	if [[ -n ${DOTSYNC_YES:-} ]]; then [[ $DOTSYNC_YES == y ]]; return; fi
+	local a
+	read -r -p "$1 [y/N] " a </dev/tty || return 1
+	[[ $a == y || $a == Y ]]
+}
+
+lock() {
+	if ! mkdir "$LOCK" 2>/dev/null; then
+		local pid
+		pid=$(cat "$LOCK/pid" 2>/dev/null || true)
+		if [[ -n $pid ]] && kill -0 "$pid" 2>/dev/null; then
+			say "dotsync: another run holds the lock (pid $pid)"
+			exit 3
+		fi
+		rm -rf "$LOCK"
+		mkdir "$LOCK" || die "cannot take lock $LOCK"
+	fi
+	echo $$ >"$LOCK/pid"
+	trap 'rm -rf "$LOCK"' EXIT
+	export DOTSYNC_LOCK_HELD=$$
+}
+
+ensure_config() {
+	g "$1" config merge.jq-merge3.name "3-way JSON merge (jq)"
+	g "$1" config merge.jq-merge3.driver "$1/scripts/jq-merge3 %O %A %B"
+}
+
+busy() { [[ -d $1/.git/rebase-merge || -d $1/.git/rebase-apply || -f $1/.git/MERGE_HEAD ]]; }
+
+# ---------------------------------------------------------------- uncommitted edits
+
+track_dirty() {
+	local repo=$1 name=$2 f=$STATE/dirty-$2 seen=$STATE/dirty-notified-$2 now since
+	now=$(date +%s)
+	if [[ -z $(g "$repo" status --porcelain) ]]; then
+		rm -f "$f" "$seen"
+		return
+	fi
+	[[ -f $f ]] || echo "$now" >"$f"
+	since=$(cat "$f")
+	((now - since >= DIRTY_HOURS * 3600)) || return
+	if [[ ! -f $seen ]] || ((now - $(cat "$seen") >= DIRTY_HOURS * 3600)); then
+		notify "$name: uncommitted changes for $(((now - since) / 3600))h. Commit them; dotsync never commits hand edits."
+		echo "$now" >"$seen"
+	fi
+}
+
+# ---------------------------------------------------------------- remote sync
+
+park() {
+	local repo=$1 name=$2 what=$3 b
+	b=conflict/$name/$(date +%Y%m%d-%H%M%S)
+	g "$repo" branch "$b" HEAD
+	fail "$name: conflict during $what. master unchanged, bookmarked as $b. Fix: cd $repo && git rebase origin/master"
+}
+
+stash_count() { g "$1" stash list | wc -l | tr -d ' '; }
+
+sync_origin() {
+	local repo=$1 name=$2 br behind ahead before
+	g "$repo" fetch -q origin || { fail "$name: fetch failed"; return 1; }
+	br=$(g "$repo" symbolic-ref --short HEAD 2>/dev/null) || { fail "$name: detached HEAD; skipped"; return 1; }
+	[[ $br == master ]] || { log "$name: on branch $br, not master; skipped"; return 1; }
+	busy "$repo" && { fail "$name: rebase or merge in progress; skipped"; return 1; }
+	behind=$(g "$repo" rev-list --count HEAD..origin/master)
+	ahead=$(g "$repo" rev-list --count origin/master..HEAD)
+	before=$(stash_count "$repo")
+	if ((behind > 0)); then
+		if ((ahead > 0)); then
+			if ! g "$repo" rebase -q --autostash origin/master >/dev/null 2>&1; then
+				g "$repo" rebase --abort >/dev/null 2>&1
+				park "$repo" "$name" "rebase onto origin/master"
+				return 1
+			fi
+		elif ! g "$repo" merge -q --ff-only --autostash origin/master >/dev/null 2>&1; then
+			fail "$name: fast-forward failed; your uncommitted edits clash with incoming changes"
+			return 1
+		fi
+		log "$name: pulled $behind commit(s)"
+	fi
+	if (($(stash_count "$repo") > before)); then
+		fail "$name: your uncommitted edits clashed with pulled changes; they are safe in 'git stash list' (stash@{0})"
+	fi
+	ahead=$(g "$repo" rev-list --count origin/master..HEAD)
+	if ((ahead > 0)); then
+		if g "$repo" push -q origin HEAD:master >"$STATE/push-$name.out" 2>&1; then
+			log "$name: pushed $ahead commit(s)"
+		else
+			fail "$name: push failed (checks or remote); see $STATE/push-$name.out"
+			return 1
+		fi
+	fi
+}
+
+# ---------------------------------------------------------------- drift
+
+# Scan one file the way the public repo's checks would: JSON parses, no Slack
+# IDs, no private deny-list terms, no secrets.
+drift_ok() {
+	local f=$1 deny=$WORK/work/public-deny.txt
+	if [[ $f == *.json ]] && ! jq empty "$f" 2>/dev/null; then return 1; fi
+	grep -q -E '\b[CDGU]0[A-Z0-9]{8,10}\b' "$f" && return 1
+	if [[ -f $deny ]] && grep -q -i -E -f <(grep -v -e '^#' -e '^$' "$deny") "$f"; then return 1; fi
+	[[ -n ${DOTSYNC_SKIP_TRUFFLEHOG:-} ]] && return 0
+	command -v trufflehog >/dev/null || return 1
+	[[ -z $(trufflehog filesystem "$f" --no-verification --no-update --exclude-detectors=Hunter --json 2>/dev/null) ]]
+}
+
+adopt_drift() {
+	local allow=$PUBLIC/scripts/drift-allow.txt line pkg rel live src n=0
+	[[ -f $allow ]] || return 0
+	while IFS= read -r line; do
+		[[ -z $line || $line == \#* ]] && continue
+		pkg=${line%%/*} rel=${line#*/} live=$H/$rel src=$PUBLIC/$line
+		[[ -f $live && ! -L $live && -f $src ]] || continue
+		if cmp -s "$live" "$src"; then
+			RELINK="$RELINK $line"
+			continue
+		fi
+		if ! drift_ok "$live"; then
+			fail "drift: ~/$rel was rewritten but fails checks (secret, Slack ID or private term); not adopted"
+			continue
+		fi
+		cp "$live" "$src"
+		g "$PUBLIC" add -- "$line"
+		if g "$PUBLIC" commit -q -m "chore($pkg): adopt live changes to ~/$rel" -- "$line" >/dev/null 2>&1; then
+			log "drift: adopted ~/$rel"
+			RELINK="$RELINK $line"
+			n=$((n + 1))
+		else
+			g "$PUBLIC" reset -q -- "$line"
+			g "$PUBLIC" checkout -q -- "$line"
+			fail "drift: commit of ~/$rel failed (signing?); not adopted"
+		fi
+	done <"$allow"
+	((n > 0))
+}
+
+relink_drift() {
+	local line pkg rel live repo bak
+	repo=$(stow_repo)
+	bak=$STATE/drift-backup/$(date +%Y%m%d-%H%M%S)
+	for line in $RELINK; do
+		pkg=${line%%/*} rel=${line#*/} live=$H/$rel
+		[[ -f $live && ! -L $live ]] || continue
+		if ! cmp -s "$live" "$repo/$line"; then
+			fail "drift: ~/$rel not relinked yet ($(basename "$repo") does not have the adopted version)"
+			continue
+		fi
+		mkdir -p "$bak/$(dirname "$rel")"
+		mv "$live" "$bak/$rel"
+		if stow -R --no-folding -d "$repo" -t "$H" "$pkg" >/dev/null 2>&1; then
+			log "drift: relinked ~/$rel"
+		else
+			mv "$bak/$rel" "$live"
+			fail "drift: stow of $pkg failed; ~/$rel restored"
+		fi
+	done
+}
+
+# Files of stowed packages that apps replaced, not on the allowlist: tell, don't touch.
+report_unlisted_drift() {
+	local repo allow f pkg live list="" n=0 key
+	repo=$(stow_repo)
+	allow=$PUBLIC/scripts/drift-allow.txt
+	while IFS= read -r f; do
+		pkg=${f%%/*}
+		[[ -d $repo/$pkg ]] || continue
+		live=$H/${f#*/}
+		[[ -f $live && ! -L $live ]] || continue
+		case $(cd "$(dirname "$live")" && pwd -P) in "$repo"/*) continue ;; esac
+		grep -qxF "$f" "$allow" 2>/dev/null && continue
+		list="$list ~/${f#*/}"
+		n=$((n + 1))
+	done < <(g "$repo" ls-files -- 'claude*' 'agy' 'git' 'zsh*' 'ghostty' 'nvim' 'tmux' 'yazi' 'lsd' 'btop' 'bottom' 'codex' 'opencode' 'fzf' 'gh' 'kitty' 'rmpc' 'ncspot' 'weather' 'dotsync' 2>/dev/null)
+	((n > 0)) || return 0
+	key=$(printf '%s' "$list" | cksum | cut -d' ' -f1)
+	[[ $(cat "$STATE/unlisted-drift" 2>/dev/null) == "$key" ]] && return 0
+	echo "$key" >"$STATE/unlisted-drift"
+	notify "drift: $n live file(s) replaced their links and are not allowlisted:$list"
+}
+
+# ---------------------------------------------------------------- downstream
+
+work_sync() {
+	have_work || return 0
+	sync_origin "$WORK" dotfiles-work || return 1
+	g "$WORK" fetch -q upstream || { fail "dotfiles-work: fetch upstream failed"; return 1; }
+	if g "$WORK" merge-base --is-ancestor upstream/master HEAD &&
+		[[ $(g "$WORK" rev-parse HEAD) == "$(cat "$STATE/last-export" 2>/dev/null)" ]]; then
+		return 0
+	fi
+	if [[ -n $(g "$WORK" status --porcelain) ]]; then
+		fail "dotfiles-work: uncommitted changes; public changes and the org export wait until you commit"
+		return 1
+	fi
+	if (cd "$WORK" && ./work/sync.sh) >>"$LOG" 2>&1; then
+		log "dotfiles-work: merged upstream, checked, pushed, exported"
+	else
+		fail "dotfiles-work: sync failed; see $LOG"
+		return 1
+	fi
+}
+
+org_check() {
+	have_work || return 0
+	g "$WORK" remote get-url org >/dev/null 2>&1 || return 0
+	local want got
+	want=$(cat "$STATE/last-export-org" 2>/dev/null) || return 0
+	got=$(g "$WORK" ls-remote org refs/heads/master 2>/dev/null | cut -f1)
+	[[ -z $got || $got == "$want" ]] && return 0
+	[[ $(cat "$STATE/org-drift" 2>/dev/null) == "$got" ]] && return 0
+	echo "$got" >"$STATE/org-drift"
+	notify "org copy has commits that did not come from the export. Review with: dotsync import-org"
+}
+
+layer_paths() { grep -v -e '^#' -e '^$' "$WORK/work/layer-paths"; }
+
+# ---------------------------------------------------------------- commands
+
+cmd_run() {
+	[[ ${1:-} == --quiet ]] && QUIET=1
+	lock
+	date +%s >"$STATE/last-run"
+	ensure_config "$PUBLIC"
+	have_work && ensure_config "$WORK"
+	track_dirty "$PUBLIC" dotfiles
+	have_work && track_dirty "$WORK" dotfiles-work
+	if sync_origin "$PUBLIC" dotfiles; then
+		adopt_drift && sync_origin "$PUBLIC" dotfiles
+	fi
+	work_sync
+	[[ -n $RELINK ]] && relink_drift
+	report_unlisted_drift
+	org_check
+	if ((ERRORS == 0)); then
+		rm -f "$STATE/last-error"
+		date +%s >"$STATE/last-ok"
+	fi
+	((ERRORS == 0))
+}
+
+repo_line() {
+	local repo=$1 name=$2 hook=$3 ahead behind dirty parked up="" problems=""
+	[[ -d $repo/.git ]] || return 0
+	ahead=$(g "$repo" rev-list --count origin/master..HEAD 2>/dev/null || echo "?")
+	behind=$(g "$repo" rev-list --count HEAD..origin/master 2>/dev/null || echo "?")
+	dirty=$(g "$repo" status --porcelain | wc -l | tr -d ' ')
+	parked=$(g "$repo" branch --list 'conflict/*' | wc -l | tr -d ' ')
+	if g "$repo" remote get-url upstream >/dev/null 2>&1; then
+		up=$(g "$repo" rev-list --count HEAD..upstream/master 2>/dev/null || echo "?")
+	fi
+	busy "$repo" && problems="$problems rebase/merge in progress;"
+	[[ $behind != 0 ]] && problems="$problems $behind behind origin;"
+	[[ $ahead != 0 ]] && problems="$problems $ahead unpushed;"
+	[[ -n $up && $up != 0 ]] && problems="$problems $up behind upstream;"
+	[[ $dirty != 0 ]] && problems="$problems $dirty uncommitted file(s);"
+	[[ $parked != 0 ]] && problems="$problems $parked parked conflict(s) (dotsync resolve);"
+	if [[ $hook == 1 ]]; then
+		[[ -n $problems ]] && echo "dotsync: $name ($repo):$problems"
+	else
+		printf '%-14s ahead %-3s behind %-3s upstream-behind %-3s dirty %-3s parked %s\n' \
+			"$name" "$ahead" "$behind" "${up:--}" "$dirty" "$parked"
+	fi
+}
+
+cmd_status() {
+	local hook=0
+	[[ ${1:-} == --hook ]] && hook=1
+	repo_line "$PUBLIC" dotfiles "$hook"
+	have_work && repo_line "$WORK" dotfiles-work "$hook"
+	if [[ -f $STATE/last-error ]]; then
+		if ((hook)); then echo "dotsync: last run failed: $(cut -d' ' -f3- "$STATE/last-error")"; else echo "last error: $(cat "$STATE/last-error")"; fi
+	fi
+	if [[ -d $LOCK ]] && ! ((hook)); then echo "lock: held by pid $(cat "$LOCK/pid" 2>/dev/null)"; fi
+	if ! ((hook)); then
+		[[ -f $STATE/last-ok ]] && echo "last ok: $(date -r "$(cat "$STATE/last-ok")" '+%F %T' 2>/dev/null || cat "$STATE/last-ok")"
+		echo "stowed from: $(stow_repo)"
+	fi
+	return 0
+}
+
+cmd_route() {
+	local c=${1:-} patch subj excl=() inc=() p deny=$WORK/work/public-deny.txt
+	[[ -n $c ]] || die "usage: dotsync route <commit>"
+	have_work || die "no downstream repo at $WORK"
+	c=$(g "$WORK" rev-parse --verify "$c^{commit}") || die "unknown commit"
+	g "$WORK" merge-base --is-ancestor "$c" origin/master && die "commit is already pushed downstream; route only unpushed commits"
+	while IFS= read -r p; do excl+=(":(exclude)$p") inc+=("$p"); done < <(layer_paths)
+	patch=$(mktemp)
+	g "$WORK" diff --binary "$c^" "$c" -- . "${excl[@]}" >"$patch"
+	[[ -s $patch ]] || die "commit has no base or personal-layer changes"
+	if [[ -n $(g "$WORK" diff --name-only "$c^" "$c" -- "${inc[@]}") ]]; then
+		die "commit mixes layer and base changes; split it first (git rebase -i)"
+	fi
+	grep '^+' "$patch" | grep -q -E '\b[CDGU]0[A-Z0-9]{8,10}\b' && die "patch adds a Slack ID; refusing"
+	if [[ -f $deny ]] && grep '^+' "$patch" | grep -q -i -E -f <(grep -v -e '^#' -e '^$' "$deny"); then
+		die "patch adds a private deny-list term; refusing"
+	fi
+	if [[ -z ${DOTSYNC_SKIP_TRUFFLEHOG:-} ]] &&
+		[[ -n $(trufflehog filesystem "$patch" --no-verification --no-update --exclude-detectors=Hunter --json 2>/dev/null) ]]; then
+		die "patch may contain a secret; refusing"
+	fi
+	[[ -z $(g "$PUBLIC" status --porcelain) ]] || die "$PUBLIC has uncommitted changes"
+	g "$WORK" show --stat --format='%h %s' "$c" -- . "${excl[@]}"
+	ask "Apply to $PUBLIC and push?" || die "not routed"
+	subj=$(g "$WORK" log -1 --format=%s "$c")
+	g "$PUBLIC" apply --3way "$patch" || die "patch does not apply to $PUBLIC; nothing changed downstream"
+	g "$PUBLIC" commit -q -m "$subj" -m "Routed from dotfiles-work@$(g "$WORK" rev-parse --short "$c")." || die "commit failed in $PUBLIC"
+	g "$PUBLIC" push -q origin HEAD:master || die "push failed in $PUBLIC (commit kept locally)"
+	g "$WORK" rebase -q --onto "$c^" "$c" master || die "routed, but could not drop $c from downstream; drop it by hand"
+	rm -f "$patch"
+	echo "routed $(g "$PUBLIC" rev-parse --short HEAD); the change returns downstream on the next dotsync run"
+}
+
+cmd_import_org() {
+	have_work || die "no downstream repo at $WORK"
+	g "$WORK" remote get-url org >/dev/null 2>&1 || die "downstream has no 'org' remote"
+	[[ -z $(g "$WORK" status --porcelain) ]] || die "$WORK has uncommitted changes"
+	local last head changed inc=() p patch
+	last=$(cat "$STATE/last-export-org" 2>/dev/null) || die "no record of the last export"
+	g "$WORK" fetch -q org || die "fetch org failed"
+	head=$(g "$WORK" rev-parse org/master)
+	[[ $head == "$last" ]] && { echo "org copy has no direct edits"; return 0; }
+	changed=$(g "$WORK" diff --name-only "$last" "$head")
+	while IFS= read -r p; do inc+=("$p"); done < <(layer_paths)
+	echo "Edited in the org copy:"
+	printf '  %s\n' "$changed"
+	patch=$(mktemp)
+	g "$WORK" diff --binary "$last" "$head" -- "${inc[@]}" >"$patch"
+	if [[ ! -s $patch ]]; then
+		echo "No layer-path edits to import. Other paths are base files: redo them in $PUBLIC. The next export overwrites them."
+		return 0
+	fi
+	ask "Import the layer-path edits into $WORK?" || die "not imported"
+	g "$WORK" apply --3way "$patch" || die "patch does not apply"
+	g "$WORK" commit -q -m "import edits made in the org copy" -m "org@$(g "$WORK" rev-parse --short "$head")" || die "commit failed"
+	rm -f "$patch"
+	echo "imported; run: dotsync run"
+}
+
+cmd_resolve() {
+	local repo b
+	if [[ ${1:-} == --drop ]]; then
+		b=${2:-}
+		[[ $b == conflict/* ]] || die "usage: dotsync resolve --drop conflict/<repo>/<time>"
+		for repo in "$PUBLIC" "$WORK"; do [[ -d $repo/.git ]] && g "$repo" branch -D "$b" 2>/dev/null; done
+		return 0
+	fi
+	for repo in "$PUBLIC" "$WORK"; do
+		[[ -d $repo/.git ]] || continue
+		g "$repo" branch --list 'conflict/*' --format="%(refname:short)  ($repo)"
+	done
+	echo "Fix: cd <repo> && git rebase origin/master, resolve, git rebase --continue; then dotsync run && dotsync resolve --drop <branch>"
+}
+
+cmd_timer() {
+	local bin=$HOME/.local/bin/dotsync label=local.dotsync
+	case "$(uname -s):${1:-}" in
+	Darwin:install)
+		local plist=$HOME/Library/LaunchAgents/$label.plist
+		mkdir -p "$(dirname "$plist")"
+		cat >"$plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key><string>$label</string>
+	<key>ProgramArguments</key><array><string>$bin</string><string>run</string><string>--quiet</string></array>
+	<key>StartInterval</key><integer>900</integer>
+	<key>RunAtLoad</key><true/>
+	<key>EnvironmentVariables</key><dict><key>PATH</key><string>$HOME/.local/bin:/opt/homebrew/bin:/opt/zerobrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+	<key>StandardOutPath</key><string>$STATE/timer.out</string>
+	<key>StandardErrorPath</key><string>$STATE/timer.err</string>
+</dict>
+</plist>
+PLIST
+		launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
+		launchctl bootstrap "gui/$(id -u)" "$plist" && echo "timer: launchd $label every 15 min"
+		;;
+	Darwin:uninstall)
+		launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
+		rm -f "$HOME/Library/LaunchAgents/$label.plist"
+		;;
+	Linux:install)
+		local d=$HOME/.config/systemd/user
+		mkdir -p "$d"
+		printf '[Unit]\nDescription=dotsync\n\n[Service]\nType=oneshot\nExecStart=%s run --quiet\n' "$bin" >"$d/dotsync.service"
+		printf '[Unit]\nDescription=dotsync every 15 min\n\n[Timer]\nOnBootSec=2min\nOnUnitActiveSec=15min\n\n[Install]\nWantedBy=timers.target\n' >"$d/dotsync.timer"
+		systemctl --user daemon-reload && systemctl --user enable --now dotsync.timer
+		;;
+	Linux:uninstall)
+		systemctl --user disable --now dotsync.timer 2>/dev/null || true
+		rm -f "$HOME/.config/systemd/user/dotsync."{service,timer}
+		;;
+	*:install | *:uninstall)
+		echo "Add or remove this crontab line (crontab -e):"
+		echo "*/15 * * * * $bin run --quiet"
+		;;
+	*) die "usage: dotsync timer install|uninstall" ;;
+	esac
+}
+
+case ${1:-} in
+run) shift; cmd_run "$@" ;;
+status) shift; cmd_status "$@" ;;
+route) shift; cmd_route "$@" ;;
+import-org) cmd_import_org ;;
+resolve) shift; cmd_resolve "$@" ;;
+timer) shift; cmd_timer "$@" ;;
+stow-repo) stow_repo ;;
+*) sed -n '2,10s/^# \{0,1\}//p' "$0"; exit 2 ;;
+esac

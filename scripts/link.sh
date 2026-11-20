@@ -10,7 +10,7 @@
 # Also:
 #   - removes broken symlinks in $HOME that point into this repo (moved files)
 #   - writes ~/.claude/CLAUDE.layers.md: one @import per claude-<layer>/.claude/CLAUDE.<x>.md
-#   - points git hooks at .githooks/
+#   - points git hooks at .githooks/ and registers the jq-merge3 merge driver
 #
 # Safe to re-run. If stow finds a real file in $HOME where a link should go,
 # it aborts and prints the path: move that file aside and run again.
@@ -21,7 +21,7 @@ REPO=$PWD
 
 # Base packages linked on every platform.
 BASE=(
-	agy bottom btop claude codex fzf gh ghostty git lsd ncspot nvim
+	agy bottom btop claude codex dotsync fzf gh ghostty git lsd ncspot nvim
 	obsidian opencode rmpc tmux w3m weather yazi zsh
 )
 # macOS-only window manager and keyboard remapper.
@@ -76,6 +76,8 @@ mkdir -p "$HOME/.claude"
 } >"$HOME/.claude/CLAUDE.layers.md"
 
 git config core.hooksPath .githooks
+git config merge.jq-merge3.name "3-way JSON merge (jq)"
+git config merge.jq-merge3.driver "$REPO/scripts/jq-merge3 %O %A %B"
 if ((${#FAILED[@]})); then
 	echo "==> Linked, except: ${FAILED[*]} (stow conflict above; move the file aside and re-run)"
 	exit 1

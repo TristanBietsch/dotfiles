@@ -1,0 +1,11 @@
+# Append-only lists: keep both sides' new lines on merge/rebase.
+claude/.claude/skills.tsv merge=union
+claude/.claude/triggers.tsv merge=union
+claude-*/.claude/skills.d/*.tsv merge=union
+claude-*/.claude/triggers.d/*.tsv merge=union
+Brewfile merge=union
+packages/*.txt merge=union
+
+# JSON settings: 3-way key merge (scripts/jq-merge3; driver set by link.sh/dotsync).
+claude/.claude/settings.json merge=jq-merge3
+agy/.gemini/antigravity-cli/settings.json merge=jq-merge3
