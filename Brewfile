@@ -56,6 +56,7 @@ cask "font-fira-code-nerd-font"
 cask "font-hack-nerd-font"
 cask "font-symbols-only-nerd-font"
 cask "karabiner-elements"
-cask "keycastr"
+cask "keycastr" if __dir__.end_with?("-work") # work machines only (~/dotfiles-work)
+cask "keyty" unless __dir__.end_with?("-work") # personal machines only
 cask "mactex-no-gui"
 cask "shortcat"
