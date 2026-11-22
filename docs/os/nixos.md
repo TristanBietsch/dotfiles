@@ -58,7 +58,7 @@ programs._1password-gui = {
 
 | Brewfile | nixpkgs |
 |---|---|
-| `obsidian-cli` (yakitrak tap) | none; build from source |
+| `notesmd-cli` (yakitrak tap) | none; build from source |
 | `mactex-no-gui` | not included; use `texliveFull` if needed |
 | `rust` | `rustc` + `cargo` |
 | `sevenzip` | `_7zz` |

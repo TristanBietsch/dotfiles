@@ -47,7 +47,7 @@ Install these by hand if you want them:
 | `marp-cli` | `npm install -g @marp-team/marp-cli` |
 | `posting` | `pipx install posting` |
 | `rmpc` | `cargo install --locked rmpc` |
-| `obsidian-cli` (yakitrak tap) | build from source |
+| `notesmd-cli` (yakitrak tap) | build from source |
 
 `mactex-no-gui` maps to `texlive-full` if needed. `aerospace`, `karabiner-elements`, `caffeine` and `shortcat` are macOS only.
 

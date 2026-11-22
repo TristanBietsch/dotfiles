@@ -36,7 +36,7 @@ Commits are signed with 1Password's SSH agent, as on macOS.
 
 | Brewfile | Arch |
 |---|---|
-| `obsidian-cli` (yakitrak tap) | none; build from source |
+| `notesmd-cli` (yakitrak tap) | none; build from source |
 | `mactex-no-gui` | not installed; use `texlive-meta` if needed |
 | `aerospace`, `karabiner-elements`, `caffeine`, `shortcat`, `keyty`, `keycastr` | macOS only; not replaced |
 | `marp-cli`, `posting`, `claude-code`, `codex` | AUR (`packages/aur.txt`) |

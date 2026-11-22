@@ -45,7 +45,7 @@ brew "resvg"
 brew "sevenzip"
 brew "anomalyco/tap/opencode"
 brew "oven-sh/bun/bun"
-brew "yakitrak/yakitrak/obsidian-cli"
+brew "yakitrak/yakitrak/notesmd-cli"
 
 # Casks.
 cask "nikitabobko/tap/aerospace"
