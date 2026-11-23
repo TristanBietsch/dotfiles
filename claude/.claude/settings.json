@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.local/bin/dotsync status --hook",
+            "command": "[ -x ~/.local/bin/dotsync ] && bash ~/.local/bin/dotsync status --hook || true",
             "timeout": 5
           }
         ]
