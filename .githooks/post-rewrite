@@ -2,7 +2,11 @@
 # post-merge / post-rewrite: in the repo $HOME is stowed from, re-link when files
 # were added, removed or renamed, and re-vendor skills when a manifest changed.
 top=$(git rev-parse --show-toplevel)
-stowed=$("$HOME/.local/bin/dotsync" stow-repo 2>/dev/null) || exit 0
+if [ -d "$HOME/dotfiles-work/.git" ] && [ -f "$HOME/dotfiles-work/work/sync.sh" ]; then
+	stowed=$HOME/dotfiles-work
+else
+	stowed=$HOME/dotfiles
+fi
 [ "$top" = "$stowed" ] || exit 0
 git rev-parse -q --verify ORIG_HEAD >/dev/null || exit 0
 if [ -n "$(git diff --name-only --diff-filter=ADR ORIG_HEAD HEAD)" ]; then

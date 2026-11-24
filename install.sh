@@ -171,9 +171,4 @@ if [ "$(basename "${SHELL:-}")" != zsh ]; then
 	echo "==> Login shell is ${SHELL:-unset}. Switch with: chsh -s \"\$(command -v zsh)\""
 fi
 
-if [ -x "$HOME/.local/bin/dotsync" ]; then
-	echo "==> dotsync timer (every 15 min)"
-	"$HOME/.local/bin/dotsync" timer install || echo "    timer not installed; run: dotsync timer install"
-fi
-
 echo "==> Done"

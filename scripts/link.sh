@@ -21,7 +21,7 @@ REPO=$PWD
 
 # Base packages linked on every platform.
 BASE=(
-	agy bottom btop claude codex dotsync fzf gh ghostty git lsd ncspot nvim
+	agy bottom btop claude codex fzf gh ghostty git lsd ncspot nvim
 	obsidian opencode rmpc tmux w3m weather yazi zsh
 )
 # macOS-only window manager and keyboard remapper.
@@ -79,6 +79,11 @@ for pkg in "${BASE[@]}" "${LAYERS[@]}"; do
 	stow -R $fold -t "$HOME" "$pkg" || FAILED+=("$pkg")
 done
 echo "  layers: ${LAYERS[*]:-none}"
+
+# dotsync is retired (the /df skill syncs on demand): drop its old link.
+if [[ -L $HOME/.local/bin/dotsync && -d dotsync ]]; then
+	stow -D -t "$HOME" dotsync && echo "  - ~/.local/bin/dotsync (retired)"
+fi
 
 echo "==> Writing ~/.claude/CLAUDE.layers.md"
 mkdir -p "$HOME/.claude"

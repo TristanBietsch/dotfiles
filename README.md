@@ -117,17 +117,20 @@ make push    # git push (pre-push runs check), then sync the downstream copy if 
 
 ## sync
 
-`dotsync` (package `dotsync/`, linked to `~/.local/bin/dotsync`) keeps every copy current. A 15-minute timer (`dotsync timer install`; `install.sh` does it) and the `post-commit` hook run `dotsync run`:
+The `/df` Claude Code skill (`claude/.claude/skills/df/`) syncs every copy on demand. Nothing runs on a timer or after a commit. `/df status` only looks; `/df` shows a plan, asks once, then:
 
-1. Pull `origin` with `--rebase --autostash`, then push local commits (`pre-push` runs `make check`).
-2. Adopt live files an app rewrote in place, if listed in `scripts/drift-allow.txt`: scan, commit, push, re-link. Other replaced links only get a notification.
-3. If a downstream copy exists (`~/dotfiles-work`), run its `work/sync.sh`: merge this repo, check, push, export.
+1. Pulls `origin` with `--rebase --autostash`, then pushes local commits (`pre-push` runs `make check`).
+2. Adopts live files an app rewrote in place, if listed in `scripts/drift-allow.txt`: shows, scans, asks, commits, pushes, re-links. Other replaced links are only reported.
+3. If a downstream copy exists (`~/dotfiles-work`), runs its `work/sync.sh`: merge this repo, check, push, export.
+4. Inits missing submodules, re-links (`scripts/link.sh`), installs missing packages and runs `claude-skills check`.
+
+Machine layer files (`~/.claude/df.*.md`, stowed from a layer package) add per-machine rules. `/df route <commit>` moves a downstream base edit to this repo.
 
 Per-machine files (`scripts/per-machine.txt`: agy settings, `~/.gitconfig`): the repo copy seeds a new machine once; after that each machine keeps its own file, never linked or synced.
 
-Merges: `.gitattributes` unions append-only lists (`skills.tsv`, `Brewfile`, `packages/*.txt`) and 3-way merges `settings.json` by key (`scripts/jq-merge3`). Any other conflict aborts cleanly, leaves a `conflict/<repo>/<time>` bookmark branch and sends a notification; `dotsync resolve` lists them.
+Merges: `.gitattributes` unions append-only lists (`skills.tsv`, `Brewfile`, `packages/*.txt`) and 3-way merges `settings.json` by key (`scripts/jq-merge3`). Any other conflict aborts cleanly, leaves a `conflict/<repo>/<time>` bookmark branch; `/df status` lists them.
 
-dotsync never commits hand edits (it carries them with `--autostash` and reminds you after 24h) and never force-pushes. `dotsync status` shows ahead/behind/dirty for each repo; Claude Code sessions get the same warnings at start.
+`/df` never commits hand edits (it carries them with `--autostash`) and never force-pushes. `dotsync/` is retired: no longer linked, timed or hooked. It stays in the repo until every machine has run `/df` once, which removes the old timer.
 
 ## not stowed
 

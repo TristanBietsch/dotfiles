@@ -49,17 +49,6 @@
           }
         ]
       }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -x ~/.local/bin/dotsync ] && bash ~/.local/bin/dotsync status --hook || true",
-            "timeout": 5
-          }
-        ]
-      }
     ]
   },
   "statusLine": {

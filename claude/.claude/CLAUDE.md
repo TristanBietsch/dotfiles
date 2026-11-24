@@ -11,9 +11,8 @@ Installed skill versions and review notes: `~/.claude/skills/INSTALLED.md`.
 
 ## Dotfiles
 
-- `~/dotfiles` (public) and `~/dotfiles-work` (private, stowed on work machines) sync through `dotsync`. After a commit there, the post-commit hook runs `dotsync run`; don't `git push` by hand, and don't commit in an export target.
-- Edit base and personal-layer files only in `~/dotfiles`; layer files only in the repo that owns them. To move a downstream commit to the public repo use `dotsync route <commit>`.
-- If a SessionStart message starts with `dotsync:`, tell me before touching dotfiles.
+- `~/dotfiles` (public) and `~/dotfiles-work` (private, stowed on work machines) sync only through the `/df` skill (`/df status` to look first). Nothing syncs on its own: commits stay local until `/df` or `make push`. Don't commit in an export target.
+- Edit base and personal-layer files only in `~/dotfiles`; layer files only in the repo that owns them. To move a downstream commit to the public repo use `/df route <commit>`.
 
 ## Layers
 
