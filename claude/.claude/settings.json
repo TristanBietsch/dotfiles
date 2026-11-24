@@ -48,6 +48,41 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$HOME/.claude/skills/impeccable/scripts/impeccable\" ] || \"$HOME/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "timeout": 5,
+            "statusMessage": "Checking UI changes"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$HOME/.claude/skills/impeccable/scripts/impeccable\" ] || \"$HOME/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "timeout": 5,
+            "statusMessage": "Preparing build session"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$HOME/.claude/skills/impeccable/scripts/impeccable\" ] || \"$HOME/.claude/skills/impeccable/scripts/impeccable\" hook",
+            "timeout": 30,
+            "statusMessage": "Design deep pass"
+          }
+        ]
       }
     ]
   },
@@ -73,7 +108,12 @@
     "terrashark@terrashark": true,
     "task-observer@one-skill-to-rule-them-all": true,
     "overkill@overkill-marketplace": true,
-    "slack@claude-plugins-official": true
+    "slack@claude-plugins-official": true,
+    "ponytail@ponytail": true,
+    "humanizer@humanizer": true,
+    "diagram-design@diagram-design": true,
+    "academic-research-skills@academic-research-skills": true,
+    "obsidian@obsidian-skills": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -129,6 +169,36 @@
         "source": "github",
         "repo": "santiago-vargas-de-kruijf/claude-overkill"
       }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "humanizer": {
+      "source": {
+        "source": "github",
+        "repo": "blader/humanizer"
+      }
+    },
+    "diagram-design": {
+      "source": {
+        "source": "github",
+        "repo": "cathrynlavery/diagram-design"
+      }
+    },
+    "academic-research-skills": {
+      "source": {
+        "source": "github",
+        "repo": "Imbad0202/academic-research-skills"
+      }
+    },
+    "obsidian-skills": {
+      "source": {
+        "source": "github",
+        "repo": "obsidianmd/obsidian-skills"
+      }
     }
   },
   "modelSettings": {
@@ -137,6 +207,14 @@
     },
     "claude-sonnet-5-5": {
       "effortLevel": "medium"
+    }
+  },
+  "pluginConfigs": {
+    "ponytail@ponytail": {
+      "options": {
+        "ledger": true,
+        "sendNames": true
+      }
     }
   },
   "tui": "fullscreen",
