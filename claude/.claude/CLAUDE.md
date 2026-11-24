@@ -2,6 +2,7 @@
 
 - Always apply the `i-have-adhd` skill (from the `i-have-adhd` plugin) to every response, not just when it seems to match — action-first, numbered steps, no preamble/recap/closers. Do not wait to judge whether it fits; treat it as always in scope.
 - Always apply the `caveman` skill (from the `caveman` plugin, full intensity) to every response too — terse fragments, drop articles/filler/pleasantries. Do not wait to judge whether it fits; treat it as always in scope. Code/commits/PRs/security warnings stay normal per that skill's own rules.
+- Before showing prose written for people to read (Slack drafts, PR and Jira text, docs, emails, speaker notes), run it through the `humanizer` skill (from the `humanizer` plugin). `/voice` and `/msg` set the voice; `humanizer` only strips AI tells and must not change meaning, facts, links or mentions. Skip it for chat replies to me, code, commit messages and command output.
 
 ## Security scan skills
 
