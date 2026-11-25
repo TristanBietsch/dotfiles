@@ -31,6 +31,7 @@ Not a stow package. Apps never read this folder; they read the generated files.
 | lsd | `lsd/.config/lsd/colors.yaml`, `icons.yaml` | none |
 | lsd, zsh completion | `zsh/.config/zsh/ls_colors.zsh` | `exec zsh` |
 | yazi | `yazi/.config/yazi/theme.toml` | restart yazi |
+| lazygit | `lazygit/.config/lazygit/config.yml` (whole config) | restart lazygit |
 
 Do not edit generated files; `build.sh` overwrites them.
 

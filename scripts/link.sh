@@ -21,7 +21,7 @@ REPO=$PWD
 
 # Base packages linked on every platform.
 BASE=(
-	agy bottom btop claude codex fzf gh ghostty git lsd ncspot nvim
+	agy bottom btop claude codex fzf gh ghostty git lazygit lsd ncspot nvim
 	obsidian opencode rmpc tmux w3m weather yazi zsh
 )
 # macOS-only window manager and keyboard remapper.

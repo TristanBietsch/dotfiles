@@ -28,6 +28,7 @@ OUTPUTS=(
 	"lsd-icons.yaml:lsd/.config/lsd/icons.yaml"
 	"ls_colors.zsh:zsh/.config/zsh/ls_colors.zsh"
 	"yazi-theme.toml:yazi/.config/yazi/theme.toml"
+	"lazygit.yml:lazygit/.config/lazygit/config.yml"
 )
 
 # shellcheck disable=SC1090
