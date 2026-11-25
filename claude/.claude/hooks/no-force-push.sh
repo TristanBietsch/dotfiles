@@ -31,7 +31,7 @@ if not (re.search(r"\bgit\b", cmd) and re.search(r"\bpush\b", cmd)):
     sys.exit(1)
 FORCE = [
     r"--fo[a-z-]*",                         # --force, --force-with-lease, --force-if-includes and abbreviations
-    r"--mi[a-z]*",                          # --mirror and abbreviations; implies force
+    r"--m[a-z]*\b",                         # --mirror and any abbreviation (--m is enough); implies force
     r"(^|[\s\"=])-[A-Za-z]*f[A-Za-z]*\b",   # -f, -uf, -fu
     r"(^|[\s\"=:])\+[^\s:+]",               # +refspec, also inside -c remote.x.push=+...
     r"remote\.[^\s=]*\.(push|mirror)\b",    # refspec or mirror set through git -c / --config-env
