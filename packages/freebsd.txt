@@ -17,6 +17,7 @@ gemini-cli
 gh
 go
 jq
+lazygit
 lsd
 neovim
 neomutt

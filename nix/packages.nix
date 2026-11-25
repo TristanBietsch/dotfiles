@@ -29,6 +29,7 @@ with pkgs; [
   gh
   go
   jq
+  lazygit
   lsd
   marp-cli
   neovim
