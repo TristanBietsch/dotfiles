@@ -4,7 +4,9 @@
 # Hard rule: never force-push. Blocks `git push` with --force, -f (alone or in
 # a short-flag group such as -uf), --force-with-lease[=...], --force-if-includes,
 # or a "+" refspec (git push origin +main). Handles `git -C <dir> push` and
-# commands chained with ; && || |.
+# commands chained with ; && || |. Commands wrapped in bash -c, eval, $(...),
+# backticks, xargs or a git alias are judged on their raw text, and a command
+# that fails to parse is denied if it looks like a forced push (fail closed).
 #
 # To update a pushed branch, merge origin/main into it instead of rebasing,
 # and ask for review before pushing.
@@ -18,8 +20,10 @@ if printf '%s' "$cmd" | python3 -I -c '
 import re, shlex, sys
 
 cmd = sys.stdin.read()
-# git options that take a separate value before the subcommand.
-VALUE_OPTS = {"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--exec-path"}
+FORCE_TOKEN = re.compile(r"(^|[\s\"=])(--force(-with-lease|-if-includes)?\b|-[A-Za-z]*f[A-Za-z]*\b|\+[^\s:+]+)")
+# Shapes this parser cannot see through: nested shells, eval, command
+# substitution, xargs, git aliases. With any of these, judge the raw text.
+OPAQUE = re.compile(r"\b(ba|z|da|k)?sh\s+-\w*c\b|\beval\b|\$\(|`|\bxargs\b|alias\.|\bexec\b")
 
 def is_force(args):
     for a in args:
@@ -31,18 +35,27 @@ def is_force(args):
             return True
     return False
 
+def raw_force(text):
+    return bool(re.search(r"\bpush\b", text) and FORCE_TOKEN.search(text))
+
+if OPAQUE.search(cmd) and raw_force(cmd):
+    sys.exit(0)
+
 for seg in re.split(r"\|\||&&|[;|\n]", cmd):
     try:
         toks = shlex.split(seg)
     except ValueError:
-        toks = seg.split()
+        # Fail closed: unparseable and looks like a forced push.
+        if raw_force(seg):
+            sys.exit(0)
+        continue
     for i, t in enumerate(toks):
         if t != "git" and not t.endswith("/git"):
             continue
-        j = i + 1
-        while j < len(toks) and toks[j].startswith("-"):
-            j += 2 if toks[j] in VALUE_OPTS else 1
-        if j < len(toks) and toks[j] == "push" and is_force(toks[j + 1:]):
+        # Do not try to skip git global options precisely; take the first
+        # "push" token after git and check everything after it.
+        rest = toks[i + 1:]
+        if "push" in rest and is_force(rest[rest.index("push") + 1:]):
             sys.exit(0)
 sys.exit(1)
 '; then
